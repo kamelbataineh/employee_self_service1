@@ -4,11 +4,11 @@ import 'LoginScreen.dart';
 
 
 void main() {
-  runApp( MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {
-   MyApp({super.key});
+  const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {

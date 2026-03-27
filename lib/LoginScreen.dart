@@ -46,7 +46,8 @@ class _LoginScreenState extends State<LoginScreen> {
         hintText: hint,
         prefixIcon: Icon(icon),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(15),
+
         ),
       ),
     );
@@ -151,11 +152,17 @@ class _LoginScreenState extends State<LoginScreen> {
                   child: ElevatedButton(
                     onPressed: handleLogin,
                     style: ElevatedButton.styleFrom(
-                      backgroundColor:  Color(0xFF2563EB),
+                      backgroundColor:Color(0xFF2563EB),
                       padding: const EdgeInsets.symmetric(vertical: 14),
                     ),
-                    child:  Text("تسجيل الدخول"),
-                  ),
+                    child: Text(
+                      "تسجيل الدخول",
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 18,
+                        color: Colors.black,
+                      ),
+                    ),                  ),
                 ),
 
                 SizedBox(height: 12,),
@@ -170,7 +177,6 @@ class _LoginScreenState extends State<LoginScreen> {
                         "استعادة الحساب",
                         style: TextStyle(
                           color: Color(0xFF2563EB),
-                          decoration: TextDecoration.underline,
                         ),
                       ),
                     ),
