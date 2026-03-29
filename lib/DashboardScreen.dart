@@ -72,7 +72,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           });
         },
         type: BottomNavigationBarType.fixed,
-        selectedItemColor: Colors.blue,
+        selectedItemColor: Colors.indigo,
         unselectedItemColor: Colors.grey,
         items: [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: "الرئيسية"),
