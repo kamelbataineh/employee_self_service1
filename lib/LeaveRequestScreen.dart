@@ -43,9 +43,17 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
 
   bool _isSelectableDay(DateTime day) {
     DateTime today = DateTime.now();
-    if (day.isBefore(today.add( Duration(days: 1)))) return false;
-    if (day.weekday == DateTime.thursday || day.weekday == DateTime.friday)
+
+    if (day.isBefore(today.add(Duration(days: 1)))) return false;
+
+    if (leaveType == "خاصة" && (specialType == "وفاة" || specialType == "حج")) {
+      return true;
+    }
+
+    if (day.weekday == DateTime.friday || day.weekday == DateTime.thursday) {
       return false;
+    }
+
     return true;
   }
 
@@ -82,24 +90,32 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
   int calculateDaysRange(DateTime start, DateTime end) {
     int count = 0;
     DateTime current = start;
+
     while (!current.isAfter(end)) {
-      if (_isSelectableDay(current)) count++;
-      current = current.add( Duration(days: 1));
-  }
+      if (leaveType == "خاصة" &&
+          (specialType == "وفاة" || specialType == "حج")) {
+        count++;
+      } else {
+        if (_isSelectableDay(current)) count++;
+      }
+
+      current = current.add(Duration(days: 1));
+    }
+
     return count;
   }
 
   Future<void> pickStartDate() async {
     DateTime now = DateTime.now();
-    DateTime initial = now.add( Duration(days: 1));
+    DateTime initial = now.add(Duration(days: 1));
     while (!_isSelectableDay(initial)) {
-      initial = initial.add( Duration(days: 1));
+      initial = initial.add(Duration(days: 1));
     }
     DateTime? picked = await showDatePicker(
       context: context,
       initialDate: initial,
       firstDate: initial,
-      lastDate: now.add( Duration(days: 365)),
+      lastDate: now.add(Duration(days: 365)),
       selectableDayPredicate: _isSelectableDay,
     );
     if (picked != null) {
@@ -122,7 +138,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
     DateTime maxEnd = startDate!;
     int added = 0;
     while (added < maxDays - 1) {
-      maxEnd = maxEnd.add( Duration(days: 1));
+      maxEnd = maxEnd.add(Duration(days: 1));
       if (_isSelectableDay(maxEnd)) added++;
     }
 
@@ -136,7 +152,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
           break;
         }
       }
-      temp = temp.add( Duration(days: 1));
+      temp = temp.add(Duration(days: 1));
     }
 
     if (initial == null) {
@@ -181,24 +197,40 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
       return;
     }
 
-    if (leaveType == "مرضية") {
-      if (days > sickLeaves) {
-        showSnack("رصيد المرضية غير كافي");
-        return;
-      }
-      sickLeaves -= days;
-    } else {
+    if (leaveType == "خاصة" &&
+        (specialType == "وفاة" ||
+            specialType == "حج" ||
+            specialType == "زواج")) {
 
-      if (days > casualLeaves) {
-        showSnack("رصيد العرضية غير كافي لهذه الإجازة");
-        return;
-      }
-      casualLeaves -= days;
+      showSnack("تم إرسال الطلب بنجاح (بدون خصم رصيد)");
+      return;
     }
 
+    setState(() {
+
+      if (leaveType == "مرضية") {
+        if (days > sickLeaves) {
+          showSnack("رصيد المرضية غير كافي");
+          return;
+        }
+        sickLeaves -= days;
+      }
+
+      else if (leaveType == "عرضية") {
+        if (days > casualLeaves) {
+          showSnack("رصيد العرضية غير كافي");
+          return;
+        }
+        casualLeaves -= days;
+      }
+
+    });
+
     showSnack("تم إرسال الطلب بنجاح");
-    Navigator.pop(context);
+    // Navigator.pop(context);
+
   }
+
 
   void showSnack(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
@@ -212,100 +244,134 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title:  Text("طلب إجازة"),
+        title: Text("طلب إجازة"),
         backgroundColor: Colors.transparent,
         elevation: 0,
         flexibleSpace: Container(
           decoration: BoxDecoration(gradient: AppColors.primaryGradient),
         ),
       ),
-        body: Padding(
-          padding: const EdgeInsets.all(16),
-          child: ListView(
-            children: [
-              Table(
-                border: TableBorder.all(color: Colors.grey.shade300),
-                columnWidths:  {
-                  0: FlexColumnWidth(1),
-                  1: FlexColumnWidth(1),
-                },
-                defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-                children: [
-                  TableRow(children: [
+      body: Padding(
+        padding: const EdgeInsets.all(16),
+        child: ListView(
+          children: [
+            Table(
+              border: TableBorder.all(color: Colors.grey.shade300),
+              columnWidths: {0: FlexColumnWidth(1), 1: FlexColumnWidth(1)},
+              defaultVerticalAlignment: TableCellVerticalAlignment.middle,
+              children: [
+                TableRow(
+                  children: [
                     Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: Text(requestDate, textAlign: TextAlign.left), // القيمة على اليسار
+                      child: Text(
+                        requestDate,
+                        textAlign: TextAlign.left,
+                      ),
                     ),
                     Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: Text("تاريخ التقديم", style: TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.right), // العنوان على اليمين
+                      child: Text(
+                        "تاريخ التقديم",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.right,
+                      ),
                     ),
-                  ]),
-                  TableRow(children: [
+                  ],
+                ),
+                TableRow(
+                  children: [
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Text(requestTime, textAlign: TextAlign.left),
                     ),
                     Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: Text("وقت التقديم", style: TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.right),
+                      child: Text(
+                        "وقت التقديم",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.right,
+                      ),
                     ),
-                  ]),
-                  TableRow(children: [
+                  ],
+                ),
+                TableRow(
+                  children: [
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Text(name, textAlign: TextAlign.left),
                     ),
                     Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: Text("الاسم", style: TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.right),
+                      child: Text(
+                        "الاسم",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.right,
+                      ),
                     ),
-                  ]),
-                  TableRow(children: [
+                  ],
+                ),
+                TableRow(
+                  children: [
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Text(department, textAlign: TextAlign.left),
                     ),
                     Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: Text("القسم", style: TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.right),
+                      child: Text(
+                        "القسم",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.right,
+                      ),
                     ),
-                  ]),
-                  TableRow(children: [
+                  ],
+                ),
+                TableRow(
+                  children: [
                     Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: Text(jobTitle, textAlign: TextAlign.left),
                     ),
                     Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: Text("المسمى الوظيفي", style: TextStyle(fontWeight: FontWeight.bold), textAlign: TextAlign.right),
+                      child: Text(
+                        "المسمى الوظيفي",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                        textAlign: TextAlign.right,
+                      ),
                     ),
-                  ]),
-                ],
-              ),
-               SizedBox(height: 20),
-              DropdownButtonFormField(
-                hint:  Text("اختر المدير"),
-                value: selectedManager,
-                items: managers.map((e) {
-                  return DropdownMenuItem(value: e, child: Text(e));
-                }).toList(),
-                onChanged: (val) => setState(() => selectedManager = val),
-              ),
-               SizedBox(height: 20),
-               Text("اختر موظف بديل"),
-              ...employees.map((emp) => CheckboxListTile(
+                  ],
+                ),
+              ],
+            ),
+            SizedBox(height: 20),
+            DropdownButtonFormField(
+              hint: Text("اختر المدير"),
+              value: selectedManager,
+              items: managers.map((e) {
+                return DropdownMenuItem(value: e, child: Text(e));
+              }).toList(),
+              onChanged: (val) => setState(() => selectedManager = val),
+            ),
+            SizedBox(height: 20),
+            Text("اختر موظف بديل"),
+            ...employees.map(
+              (emp) => CheckboxListTile(
                 title: Text(emp),
                 value: selectedEmployees.contains(emp),
                 onChanged: (val) {
                   setState(() {
-                    val! ? selectedEmployees.add(emp) : selectedEmployees.remove(emp);
+                    val!
+                        ? selectedEmployees.add(emp)
+                        : selectedEmployees.remove(emp);
                   });
                 },
-              )),
-             SizedBox(height: 20),
+              ),
+            ),
+            SizedBox(height: 20),
             DropdownButtonFormField(
-              hint:  Text("نوع الإجازة"),
+              hint: Text("نوع الإجازة"),
               value: leaveType,
               items: leaveTypes.map((e) {
                 return DropdownMenuItem(value: e, child: Text(e));
@@ -318,10 +384,10 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
                 });
               },
             ),
-             SizedBox(height: 20),
+            SizedBox(height: 20),
             if (leaveType == "خاصة") ...[
               DropdownButtonFormField(
-                hint:  Text("نوع الإجازة الخاصة"),
+                hint: Text("نوع الإجازة الخاصة"),
                 value: specialType,
                 items: specialTypes.map((e) {
                   return DropdownMenuItem(value: e, child: Text(e));
@@ -333,7 +399,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
               ),
               if (specialType == "وفاة")
                 DropdownButtonFormField(
-                  hint:  Text("صلة القرابة"),
+                  hint: Text("صلة القرابة"),
                   value: relation,
                   items: relations.map((e) {
                     return DropdownMenuItem(value: e, child: Text(e));
@@ -343,29 +409,26 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
               if (specialType == "أخرى")
                 TextField(
                   controller: noteController,
-                  decoration:  InputDecoration(labelText: "اكتب السبب"),
+                  decoration: InputDecoration(labelText: "اكتب السبب"),
                 ),
             ],
+            SizedBox(height: 20),
+            buildDateButton(
+              startDate == null ? "تاريخ البداية" : formatDate(startDate!),
+              pickStartDate,
+            ),
+             SizedBox(height: 10),
+            buildDateButton(
+              endDate == null ? "تاريخ النهاية" : formatDate(endDate!),
+              pickEndDate,
+            ),
+             SizedBox(height: 10),
+            Text("عدد الأيام: ${calculateDays()}"),
              SizedBox(height: 20),
-              buildDateButton(
-                startDate == null ? "تاريخ البداية" : formatDate(startDate!),
-                pickStartDate,
-              ),
-              const SizedBox(height: 10),
-              buildDateButton(
-                endDate == null ? "تاريخ النهاية" : formatDate(endDate!),
-                pickEndDate,
-              ),
-              const SizedBox(height: 10),
-              Text("عدد الأيام: ${calculateDays()}"),
-              const SizedBox(height: 20),
-              Text("رصيد المرضية: $sickLeaves"),
-              Text("رصيد العرضية: $casualLeaves"),
-              const SizedBox(height: 20),
-              buildDateButton(
-                "إرسال الطلب",
-                submitRequest,
-              ),
+            Text("رصيد المرضية: $sickLeaves"),
+            Text("رصيد العرضية: $casualLeaves"),
+             SizedBox(height: 20),
+            buildDateButton("إرسال الطلب", submitRequest),
           ],
         ),
       ),
@@ -376,7 +439,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        width: double.infinity/2,
+        width: double.infinity / 2,
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
           gradient: AppColors.primaryGradient,
@@ -386,10 +449,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
         child: Center(
           child: Text(
             text,
-            style:  TextStyle(
-              color: Colors.white,
-              fontWeight: FontWeight.bold,
-            ),
+            style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
           ),
         ),
       ),
