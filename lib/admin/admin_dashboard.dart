@@ -1,15 +1,15 @@
-// admin_dashboard.dart
 import 'dart:convert';
+import 'package:employee_self_service/admin/sub_departments_page.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../config/api.dart';
 import 'add_department.dart';
-import 'add_employee.dart';
+import 'add_sub_department.dart';
 import 'department_employees.dart';
 
 class AdminDashboard extends StatefulWidget {
-   AdminDashboard({super.key});
+  AdminDashboard({super.key});
 
   @override
   State<AdminDashboard> createState() => _AdminDashboardState();
@@ -18,7 +18,6 @@ class AdminDashboard extends StatefulWidget {
 class _AdminDashboardState extends State<AdminDashboard> {
   List<Map<String, dynamic>> departments = [];
   bool loading = true;
-  String? adminId;
   String? token;
 
   @override
@@ -27,21 +26,9 @@ class _AdminDashboardState extends State<AdminDashboard> {
     loadAdminData();
   }
 
-
-
-
-
-
-  ////////////////////////////////
-  ////////////////////////////////
-  ////////////////////////////////
-  ////////////////////////////////
-
   Future<void> loadAdminData() async {
     final prefs = await SharedPreferences.getInstance();
     token = prefs.getString("token");
-    adminId = prefs.getString("adminId");
-
     fetchDepartments();
   }
 
@@ -52,13 +39,12 @@ class _AdminDashboardState extends State<AdminDashboard> {
         Uri.parse(admindashboardAll),
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token',
+          'Authorization': 'Bearer $token', // ✅ التوكن جاهز
         },
       );
 
       if (response.statusCode == 200) {
         final List data = jsonDecode(response.body);
-
         setState(() {
           departments = List<Map<String, dynamic>>.from(data);
           loading = false;
@@ -71,46 +57,42 @@ class _AdminDashboardState extends State<AdminDashboard> {
     }
   }
 
-
-
-  //////////////////////////////////////////////////////////////////////////////
-  //////////////////////////////////////////////////////////////////////////////
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title:  Text("لوحة التحكم"),
+        title: Text("لوحة التحكم"),
         backgroundColor: Colors.black,
       ),
       drawer: Drawer(
         child: ListView(
           children: [
-             DrawerHeader(
+            DrawerHeader(
               child: Text("الشركة", style: TextStyle(fontSize: 24)),
             ),
             ...departments.map((dept) => ListTile(
               title: Text(dept['name'] ?? ''),
-              subtitle:
-              Text("الموظفين: ${dept['employeeCount'] ?? 0}"),
+              subtitle: Text(
+                  "الأقسام الفرعية: ${(dept['subDepartments'] as List<dynamic>?)?.length ?? 0}"),
               trailing: IconButton(
-                icon:  Icon(Icons.person_add),
-                onPressed: () {
-                  Navigator.push(
+                icon: Icon(Icons.add),
+                onPressed: () async {
+                  await Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => AddEmployeePage(
+                      builder: (_) => AddSubDepartmentPage(
                         departmentId: dept['_id'] ?? '',
                       ),
                     ),
-                  ).then((_) => fetchDepartments());
+                  );
+                  fetchDepartments();
                 },
               ),
               onTap: () async {
                 await Navigator.push(
                   context,
                   MaterialPageRoute(
-                    builder: (_) => DepartmentEmployeesPage(
+                    builder: (_) => SubDepartmentsPage(
                       departmentId: dept['_id'] ?? '',
                       departmentName: dept['name'] ?? '',
                     ),
@@ -118,14 +100,14 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 );
               },
             )),
-             Divider(),
+            Divider(),
             ListTile(
-              leading:  Icon(Icons.add),
-              title:  Text("إضافة قسم جديد"),
+              leading: Icon(Icons.add),
+              title: Text("إضافة قسم جديد"),
               onTap: () async {
                 await Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (_) =>  AddDepartmentPage()),
+                  MaterialPageRoute(builder: (_) => AddDepartmentPage()),
                 );
                 fetchDepartments();
               },
@@ -134,12 +116,11 @@ class _AdminDashboardState extends State<AdminDashboard> {
         ),
       ),
       body: loading
-          ?  Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator())
           : Padding(
-        padding:  EdgeInsets.all(16.0),
+        padding: EdgeInsets.all(16.0),
         child: GridView.builder(
-          gridDelegate:
-          const SliverGridDelegateWithFixedCrossAxisCount(
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 2,
             mainAxisSpacing: 10,
             crossAxisSpacing: 10,
@@ -148,20 +129,19 @@ class _AdminDashboardState extends State<AdminDashboard> {
           itemCount: departments.length,
           itemBuilder: (context, index) {
             final dept = departments[index];
-            final employeeCount = dept['employeeCount'] is String
-                ? int.tryParse(dept['employeeCount']) ?? 0
-                : (dept['employeeCount'] ?? 0);
+            final subDepartmentCount =
+                (dept['subDepartments'] as List<dynamic>?)?.length ?? 0;
             return GestureDetector(
-              onTap: () async {
-                await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => DepartmentEmployeesPage(
-                      departmentId: dept['_id'] ?? '',
-                      departmentName: dept['name'] ?? '',
+                onTap: () async {
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => SubDepartmentsPage(
+                        departmentId: dept['_id'] ?? '',
+                        departmentName: dept['name'] ?? '',
+                      ),
                     ),
-                  ),
-                );
+                  );
               },
               child: Card(
                 elevation: 3,
@@ -172,12 +152,11 @@ class _AdminDashboardState extends State<AdminDashboard> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(dept['name'] ?? '',
-                          style:  TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16)),
-                       SizedBox(height: 8),
-                      Text("$employeeCount موظف",
-                          style:  TextStyle(fontSize: 14)),
+                          style: TextStyle(
+                              fontWeight: FontWeight.bold, fontSize: 16)),
+                      SizedBox(height: 8),
+                      Text("$subDepartmentCount قسم فرعي",
+                          style: TextStyle(fontSize: 14)),
                     ],
                   ),
                 ),

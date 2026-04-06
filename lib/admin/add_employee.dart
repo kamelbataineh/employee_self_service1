@@ -5,10 +5,16 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../config/api.dart';
 
 class AddEmployeePage extends StatefulWidget {
-  final String? departmentId;
-  final String? departmentName;
+  final String departmentId;
+  final String subDepartmentId;
+  final String departmentName;
 
-  const AddEmployeePage({super.key, this.departmentId, this.departmentName});
+  const AddEmployeePage({
+    super.key,
+    required this.departmentId,
+    required this.subDepartmentId,
+    required this.departmentName,
+  });
 
   @override
   State<AddEmployeePage> createState() => _AddEmployeePageState();
@@ -21,103 +27,41 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
   final TextEditingController idController = TextEditingController();
   final TextEditingController roleController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-
   bool isLoading = false;
-  List<Map<String, dynamic>> departments = [];
-  String? selectedDepartmentId;
-  String? selectedDepartmentName;
-
-  @override
-  void initState() {
-    super.initState();
-
-    if (widget.departmentId != null) {
-      selectedDepartmentId = widget.departmentId;
-      selectedDepartmentName = widget.departmentName ?? "قسم غير معروف";
-    } else {
-      fetchDepartments();
-    }
-  }
-
-
-
-  ////////////////////////////////
-  ////////////////////////////////
-  ////////////////////////////////
-  ////////////////////////////////
-
-  Future<void> fetchDepartments() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString("token") ?? "";
-
-      final response = await http.get(
-        Uri.parse(admindashboardAll),
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer $token",
-        },
-      );
-
-      if (response.statusCode == 200) {
-        final List data = jsonDecode(response.body);
-        setState(() {
-          departments = data.map((e) => e as Map<String, dynamic>).toList();
-          if (departments.isNotEmpty && selectedDepartmentId == null) {
-            selectedDepartmentId = departments[0]['_id'];
-            selectedDepartmentName = departments[0]['name'];
-          }
-        });
-      } else {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text("فشل جلب الأقسام")));
-      }
-    } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("خطأ بالاتصال بالسيرفر")));
-    }
-  }
-  ////////////////////////////////
-  ////////////////////////////////
-  ////////////////////////////////
-  ////////////////////////////////
-
 
   Future<void> submitEmployee() async {
-    if (nameController.text.isEmpty ||
-        idController.text.isEmpty ||
-        passwordController.text.isEmpty ||
-        selectedDepartmentId == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("الرجاء ملء الحقول الأساسية")),
-      );
-      return;
-    }
+    if (nameController.text.isEmpty || idController.text.isEmpty) return;
 
     setState(() => isLoading = true);
 
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString("token") ?? "";
+    final prefs = await SharedPreferences.getInstance();
+    final token = prefs.getString("token") ?? "";
 
+    // 🟢 طباعة البيانات قبل الإرسال
+    final bodyData = {
+      "name": nameController.text,
+      "phone": phoneController.text,
+      "age": int.tryParse(ageController.text) ?? 0, // ⚡ تحويل العمر لرقم
+      "employeeId": idController.text,
+      "role": roleController.text,
+      "password": passwordController.text,
+      "departmentId": widget.departmentId,
+      "subDepartmentId": widget.subDepartmentId,
+    };
+    print("Submitting employee: $bodyData");
+
+    try {
       final response = await http.post(
-        Uri.parse(employeeAdd),
+        Uri.parse(addEmployeeToSubDepartment),
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer $token",
         },
-        body: jsonEncode({
-          "name": nameController.text,
-          "phone": phoneController.text,
-          "age": ageController.text,
-          "employeeId": idController.text,
-          "role": roleController.text,
-          "password": passwordController.text,
-          "department": selectedDepartmentId,
-        }),
+        body: jsonEncode(bodyData),
       );
+
+      // 🟢 طباعة الرد من السيرفر
+      print("Server response: ${response.statusCode} - ${response.body}");
 
       final data = jsonDecode(response.body);
 
@@ -127,23 +71,18 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
         );
         Navigator.pop(context, true);
       } else {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(data["message"] ?? "حدث خطأ")));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(data["message"] ?? "حدث خطأ")),
+        );
       }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("خطأ بالاتصال بالسيرفر")));
+      print("Error connecting to server: $e"); // 🟢 طباعة الخطأ
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text("خطأ بالاتصال بالسيرفر")));
+    } finally {
+      setState(() => isLoading = false);
     }
-
-    setState(() => isLoading = false);
   }
-
-
-
-  //////////////////////////////////////////////////////////////////////////////
-  //////////////////////////////////////////////////////////////////////////////
 
   @override
   Widget build(BuildContext context) {
@@ -153,71 +92,14 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
         padding: const EdgeInsets.all(16),
         child: ListView(
           children: [
-            TextField(
-              controller: nameController,
-              decoration: InputDecoration(labelText: "الاسم"),
-            ),
-            TextField(
-              controller: phoneController,
-              decoration: InputDecoration(labelText: "رقم الهاتف"),
-            ),
-            TextField(
-              controller: ageController,
-              decoration: InputDecoration(labelText: "العمر"),
-              keyboardType: TextInputType.number,
-            ),
-            TextField(
-              controller: idController,
-              decoration: InputDecoration(labelText: "ID الموظف"),
-            ),
-            TextField(
-              controller: roleController,
-              decoration: InputDecoration(labelText: "الدور / الوظيفة"),
-            ),
-            TextField(
-              controller: passwordController,
-              decoration: InputDecoration(labelText: "كلمة السر"),
-              obscureText: true,
-            ),
-            SizedBox(height: 20),
-
-            if (widget.departmentId != null) ...[
-              TextField(
-                enabled: false,
-                decoration: InputDecoration(
-                  labelText: "القسم",
-                  hintText: selectedDepartmentName,
-                ),
-              ),
-              SizedBox(height: 20),
-            ],
-
-            if (widget.departmentId == null) ...[
-              DropdownButton<String>(
-                value: selectedDepartmentId,
-                isExpanded: true,
-                hint: Text("اختر القسم"),
-                items: departments.map((dept) {
-                  return DropdownMenuItem<String>(
-                    value: dept['_id'],
-                    child: Text(dept['name']),
-                  );
-                }).toList(),
-                onChanged: (value) {
-                  setState(() {
-                    selectedDepartmentId = value;
-                    selectedDepartmentName = departments.firstWhere(
-                      (d) => d['_id'] == value,
-                    )['name'];
-                  });
-                },
-              ),
-              SizedBox(height: 20),
-            ],
-
-            isLoading
-                ? Center(child: CircularProgressIndicator())
-                : ElevatedButton(onPressed: submitEmployee, child: Text("حفظ")),
+            TextField(controller: nameController, decoration: InputDecoration(labelText: "الاسم")),
+            TextField(controller: phoneController, decoration: InputDecoration(labelText: "رقم الهاتف")),
+            TextField(controller: ageController, decoration: InputDecoration(labelText: "العمر"), keyboardType: TextInputType.number),
+            TextField(controller: idController, decoration: InputDecoration(labelText: "ID الموظف")),
+            TextField(controller: roleController, decoration: InputDecoration(labelText: "الدور / الوظيفة")),
+            TextField(controller: passwordController, decoration: InputDecoration(labelText: "كلمة السر"), obscureText: true),
+            const SizedBox(height: 20),
+            ElevatedButton(onPressed: isLoading ? null : submitEmployee, child: isLoading ? CircularProgressIndicator() : Text("حفظ")),
           ],
         ),
       ),
