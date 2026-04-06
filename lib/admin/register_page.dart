@@ -9,13 +9,23 @@ class RegisterPage extends StatelessWidget {
 
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-  final TextEditingController confirmPasswordController = TextEditingController();
+  final TextEditingController confirmPasswordController =
+      TextEditingController();
 
   void showSnack(BuildContext context, String msg) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
-  Future<void> registerAdmin(BuildContext context, String email, String password) async {
+  ////////////////////////////////
+  ////////////////////////////////
+  ////////////////////////////////
+  ////////////////////////////////
+
+  Future<void> registerAdmin(
+    BuildContext context,
+    String email,
+    String password,
+  ) async {
     final url = Uri.parse(adminregister);
 
     try {
@@ -28,30 +38,30 @@ class RegisterPage extends StatelessWidget {
       final data = jsonDecode(response.body);
 
       if (response.statusCode == 201) {
-        print("✅ تم التسجيل: ${data['adminId']}");
         showSnack(context, data['message']);
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (context) => LoginPage()),
         );
       } else {
-        print("❌ فشل التسجيل: ${data['message']}");
         showSnack(context, data['message'] ?? 'حدث خطأ');
       }
     } catch (e) {
-      print("⚠️ خطأ في الاتصال بالسيرفر: $e");
       showSnack(context, 'فشل الاتصال بالسيرفر');
     }
   }
 
+  //////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("إنشاء حساب Admin")),
+      appBar: AppBar(title: Text("إنشاء حساب Admin")),
       body: Center(
         child: Container(
           width: 400,
-          padding: const EdgeInsets.all(20),
+          padding: EdgeInsets.all(20),
           decoration: BoxDecoration(
             border: Border.all(color: Colors.grey.shade300),
             borderRadius: BorderRadius.circular(10),
@@ -59,26 +69,28 @@ class RegisterPage extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              const Text("إنشاء حساب جديد",
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 20),
+              Text(
+                "إنشاء حساب جديد",
+                style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+              ),
+              SizedBox(height: 20),
               TextField(
                 controller: emailController,
-                decoration: const InputDecoration(labelText: "إيميل الشركة"),
+                decoration: InputDecoration(labelText: "إيميل الشركة"),
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: 10),
               TextField(
                 controller: passwordController,
-                decoration: const InputDecoration(labelText: "كلمة السر"),
+                decoration: InputDecoration(labelText: "كلمة السر"),
                 obscureText: true,
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: 10),
               TextField(
                 controller: confirmPasswordController,
-                decoration: const InputDecoration(labelText: "تأكيد كلمة السر"),
+                decoration: InputDecoration(labelText: "تأكيد كلمة السر"),
                 obscureText: true,
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               ElevatedButton(
                 onPressed: () {
                   String email = emailController.text.trim();
@@ -100,10 +112,9 @@ class RegisterPage extends StatelessWidget {
                     return;
                   }
 
-                  // نرسل البيانات للسيرفر
                   registerAdmin(context, email, pass);
                 },
-                child: const Text("إنشاء الحساب"),
+                child: Text("إنشاء الحساب"),
               ),
               TextButton(
                 onPressed: () {
@@ -112,7 +123,7 @@ class RegisterPage extends StatelessWidget {
                     MaterialPageRoute(builder: (context) => LoginPage()),
                   );
                 },
-                child: const Text("لديك حساب بالفعل؟ تسجيل الدخول"),
+                child: Text("لديك حساب بالفعل؟ تسجيل الدخول"),
               ),
             ],
           ),
