@@ -10,7 +10,7 @@ class SubDepartmentsPage extends StatefulWidget {
   final String departmentId;
   final String departmentName;
 
-   SubDepartmentsPage({
+  const SubDepartmentsPage({
     super.key,
     required this.departmentId,
     required this.departmentName,

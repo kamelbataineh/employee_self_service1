@@ -7,7 +7,7 @@ import '../config/api.dart';
 class EmployeeDetailsPage extends StatefulWidget {
   final String employeeId;
 
-   EmployeeDetailsPage({super.key, required this.employeeId});
+  const EmployeeDetailsPage({super.key, required this.employeeId});
 
   @override
   State<EmployeeDetailsPage> createState() => _EmployeeDetailsPageState();

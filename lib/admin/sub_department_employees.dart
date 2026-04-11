@@ -12,7 +12,7 @@ class SubDepartmentEmployeesPage extends StatefulWidget {
   final String subDepartmentName;
   final String departmentName;
 
-   SubDepartmentEmployeesPage({
+  const SubDepartmentEmployeesPage({
     super.key,
     required this.departmentId,
     required this.subDepartmentId,

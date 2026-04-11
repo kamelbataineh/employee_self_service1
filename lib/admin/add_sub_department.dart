@@ -6,7 +6,7 @@ import '../config/api.dart';
 class AddSubDepartmentPage extends StatefulWidget {
   final String departmentId;
 
-   AddSubDepartmentPage({super.key, required this.departmentId});
+  const AddSubDepartmentPage({super.key, required this.departmentId});
 
   @override
   State<AddSubDepartmentPage> createState() => _AddSubDepartmentPageState();

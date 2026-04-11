@@ -10,7 +10,7 @@ class AddEmployeePage extends StatefulWidget {
   final String departmentName;
   final String subDepartmentName;
 
-   AddEmployeePage({
+  const AddEmployeePage({
     super.key,
     required this.departmentId,
     required this.subDepartmentId,

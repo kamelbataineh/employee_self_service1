@@ -6,7 +6,7 @@ import '../config/api.dart';
 class AddDepartmentPage extends StatefulWidget {
   final VoidCallback? onCreated;
 
-   AddDepartmentPage({super.key, this.onCreated});
+  const AddDepartmentPage({super.key, this.onCreated});
 
   @override
   State<AddDepartmentPage> createState() => _AddDepartmentPageState();
