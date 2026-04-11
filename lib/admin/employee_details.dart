@@ -15,6 +15,8 @@ class EmployeeDetailsPage extends StatefulWidget {
 
 class _EmployeeDetailsPageState extends State<EmployeeDetailsPage> {
   Map? employee;
+  Map? department;
+  Map? subDepartment;
   bool loading = true;
 
   @override
@@ -22,6 +24,7 @@ class _EmployeeDetailsPageState extends State<EmployeeDetailsPage> {
     super.initState();
     loadEmployee();
   }
+
   Future<void> loadEmployee() async {
     setState(() => loading = true);
 
@@ -30,62 +33,177 @@ class _EmployeeDetailsPageState extends State<EmployeeDetailsPage> {
       final token = prefs.getString("token");
 
       final url = getEmployeeById(widget.employeeId);
-      print("Fetching URL: $url");
 
       final res = await http.get(
         Uri.parse(url),
         headers: {"Authorization": "Bearer $token"},
       );
 
-      print("Response code: ${res.statusCode}");
-      print("Response body: ${res.body}");
-
       if (res.statusCode == 200) {
+        final data = jsonDecode(res.body);
+
         setState(() {
-          employee = jsonDecode(res.body);
+          employee = data['employee'];
+          department = data['department'];
+          subDepartment = data['subDepartment'];
           loading = false;
         });
-      } else if (res.statusCode == 404) {
-        setState(() {
-          loading = false;
-          employee = null;
-        });
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("الموظف غير موجود")),
-        );
       } else {
-        setState(() => loading = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(content: Text("حدث خطأ")),
-        );
+        setState(() {
+          employee = null;
+          loading = false;
+        });
       }
     } catch (e) {
-      setState(() => loading = false);
-      print("Exception: $e");
-      ScaffoldMessenger.of(context).showSnackBar(
-         SnackBar(content: Text("فشل في الاتصال بالخادم")),
-      );
+      setState(() {
+        employee = null;
+        loading = false;
+      });
     }
+  }
+
+  Widget sectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 10),
+      child: Text(
+        title,
+        style:  TextStyle(
+          fontSize: 18,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
+  Widget infoBox(String title, String value) {
+    return Container(
+      padding:  EdgeInsets.all(12),
+      margin:  EdgeInsets.all(6),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade100,
+        borderRadius: BorderRadius.circular(10),
+        border: Border.all(color: Colors.grey.shade300),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            title,
+            style:  TextStyle(fontSize: 12, color: Colors.grey),
+          ),
+           SizedBox(height: 5),
+          Text(
+            value.isEmpty ? "-" : value,
+            style:  TextStyle(
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title:  Text("تفاصيل الموظف")),
+      backgroundColor: Colors.grey.shade200,
+      appBar: AppBar(
+        title:  Text("Employee Details"),
+        backgroundColor: Colors.black,
+      ),
       body: loading
           ?  Center(child: CircularProgressIndicator())
           : employee == null
-          ? Center(child: Text("لا توجد بيانات للموظف"))
-          : Padding(
-        padding: const EdgeInsets.all(16),
+          ?  Center(child: Text("No Employee Found"))
+          : SingleChildScrollView(
+        padding:  EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text("الاسم: ${employee!['name']}"),
-            Text("الوظيفة: ${employee!['role']}"),
-            Text("الهاتف: ${employee!['phone']}"),
-            Text("العمر: ${employee!['age']}"),
-            Text("القسم: ${employee!['department']['name']}"),
+            Container(
+              width: double.infinity,
+              padding:  EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(15),
+              ),
+              child: Row(
+                children: [
+                  CircleAvatar(
+                    radius: 30,
+                    backgroundColor: Colors.black,
+                    child: Text(
+                      (employee?['name'] ?? '')
+                          .toString()
+                          .isNotEmpty
+                          ? employee!['name'][0]
+                          : '?',
+                      style:  TextStyle(color: Colors.white),
+                    ),
+                  ),
+                   SizedBox(width: 15),
+                  Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        employee?['name'] ?? '',
+                        style:  TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      Text(
+                        employee?['role'] ?? '',
+                        style:  TextStyle(color: Colors.grey),
+                      ),
+                    ],
+                  )
+                ],
+              ),
+            ),
+
+             SizedBox(height: 20),
+
+            sectionTitle("Employee Info"),
+            GridView.count(
+              crossAxisCount: 3,
+              shrinkWrap: true,
+              physics:  NeverScrollableScrollPhysics(),
+              childAspectRatio: 3,
+              children: [
+                infoBox("Employee ID",
+                    employee?['employeeId'] ?? ''),
+                infoBox("Phone", employee?['phone'] ?? ''),
+                infoBox(
+                    "Age", employee?['age']?.toString() ?? ''),
+                infoBox("Role", employee?['role'] ?? ''),
+              ],
+            ),
+
+            sectionTitle("Department"),
+            GridView.count(
+              crossAxisCount: 2,
+              shrinkWrap: true,
+              physics:  NeverScrollableScrollPhysics(),
+              childAspectRatio: 3,
+              children: [
+                infoBox("Name", department?['name'] ?? ''),
+                infoBox("ID", department?['id'] ?? ''),
+              ],
+            ),
+
+            sectionTitle("Sub Department"),
+            GridView.count(
+              crossAxisCount: 2,
+              shrinkWrap: true,
+              physics:  NeverScrollableScrollPhysics(),
+              childAspectRatio: 3,
+              children: [
+                infoBox("Name", subDepartment?['name'] ?? ''),
+                infoBox("ID", subDepartment?['id'] ?? ''),
+              ],
+            ),
           ],
         ),
       ),

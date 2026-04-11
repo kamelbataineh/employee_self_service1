@@ -1,15 +1,13 @@
 import 'dart:convert';
-import 'package:employee_self_service/admin/sub_departments_page.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../config/api.dart';
+import 'sub_departments_page.dart';
 import 'add_department.dart';
-import 'add_sub_department.dart';
-import 'department_employees.dart';
 
 class AdminDashboard extends StatefulWidget {
-  AdminDashboard({super.key});
+  const AdminDashboard({super.key});
 
   @override
   State<AdminDashboard> createState() => _AdminDashboardState();
@@ -19,6 +17,9 @@ class _AdminDashboardState extends State<AdminDashboard> {
   List<Map<String, dynamic>> departments = [];
   bool loading = true;
   String? token;
+
+  Widget currentPage = const SizedBox();
+  String currentTitle = "Dashboard";
 
   @override
   void initState() {
@@ -34,20 +35,23 @@ class _AdminDashboardState extends State<AdminDashboard> {
 
   Future<void> fetchDepartments() async {
     setState(() => loading = true);
+
     try {
       final response = await http.get(
         Uri.parse(admindashboardAll),
         headers: {
-          'Content-Type': 'application/json',
-          'Authorization': 'Bearer $token', // ✅ التوكن جاهز
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
         },
       );
 
       if (response.statusCode == 200) {
         final List data = jsonDecode(response.body);
+
         setState(() {
           departments = List<Map<String, dynamic>>.from(data);
           loading = false;
+          currentPage = buildDashboardGrid();
         });
       } else {
         setState(() => loading = false);
@@ -57,113 +61,165 @@ class _AdminDashboardState extends State<AdminDashboard> {
     }
   }
 
+  Widget buildTopHeader() {
+    return Container(
+      width: double.infinity,
+      padding:  EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
+      ),
+      child: Text(
+        currentTitle,
+        style:  TextStyle(
+          fontSize: 22,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    );
+  }
+
+  Widget buildDashboardGrid() {
+    if (loading) {
+      return  Center(child: CircularProgressIndicator());
+    }
+
+    return SingleChildScrollView(
+      child: Column(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(20),
+            child: GridView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate:  SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                crossAxisSpacing: 20,
+                mainAxisSpacing: 20,
+                childAspectRatio: 1.6,
+              ),
+              itemCount: departments.length,
+              itemBuilder: (context, index) {
+                final dept = departments[index];
+                final count =
+                    (dept['subDepartments'] as List?)?.length ?? 0;
+
+                return InkWell(
+                  onTap: () {
+                    setState(() {
+                      currentPage = SubDepartmentsPage(
+                        departmentId: dept['_id'],
+                        departmentName: dept['name'],
+                      );
+                      currentTitle = dept['name'];
+                    });
+                  },
+                  child: Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.05),
+                          blurRadius: 10,
+                        )
+                      ],
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          dept['name'] ?? '',
+                          style:  TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                         SizedBox(height: 10),
+                        Text("$count Sub Departments"),
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget buildSidebarItem({
+    required IconData icon,
+    required String title,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      leading: Icon(icon, color: Colors.white),
+      title: Text(title, style:  TextStyle(color: Colors.white)),
+      onTap: onTap,
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("لوحة التحكم"),
-        backgroundColor: Colors.black,
-      ),
-      drawer: Drawer(
-        child: ListView(
-          children: [
-            DrawerHeader(
-              child: Text("الشركة", style: TextStyle(fontSize: 24)),
-            ),
-            ...departments.map((dept) => ListTile(
-              title: Text(dept['name'] ?? ''),
-              subtitle: Text(
-                  "الأقسام الفرعية: ${(dept['subDepartments'] as List<dynamic>?)?.length ?? 0}"),
-              trailing: IconButton(
-                icon: Icon(Icons.add),
-                onPressed: () async {
-                  await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => AddSubDepartmentPage(
-                        departmentId: dept['_id'] ?? '',
-                      ),
-                    ),
-                  );
-                  fetchDepartments();
-                },
-              ),
-              onTap: () async {
-                await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => SubDepartmentsPage(
-                      departmentId: dept['_id'] ?? '',
-                      departmentName: dept['name'] ?? '',
-                    ),
-                  ),
-                );
-              },
-            )),
-            Divider(),
-            ListTile(
-              leading: Icon(Icons.add),
-              title: Text("إضافة قسم جديد"),
-              onTap: () async {
-                await Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => AddDepartmentPage()),
-                );
-                fetchDepartments();
-              },
-            ),
-          ],
-        ),
-      ),
-      body: loading
-          ? Center(child: CircularProgressIndicator())
-          : Padding(
-        padding: EdgeInsets.all(16.0),
-        child: GridView.builder(
-          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: 2,
-            mainAxisSpacing: 10,
-            crossAxisSpacing: 10,
-            childAspectRatio: 1.5,
-          ),
-          itemCount: departments.length,
-          itemBuilder: (context, index) {
-            final dept = departments[index];
-            final subDepartmentCount =
-                (dept['subDepartments'] as List<dynamic>?)?.length ?? 0;
-            return GestureDetector(
-                onTap: () async {
-                  await Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => SubDepartmentsPage(
-                        departmentId: dept['_id'] ?? '',
-                        departmentName: dept['name'] ?? '',
-                      ),
-                    ),
-                  );
-              },
-              child: Card(
-                elevation: 3,
-                color: Colors.white,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
+      backgroundColor: Colors.grey[100],
+      body: Row(
+        children: [
+          Container(
+            width: 250,
+            color: Colors.black,
+            child: Column(
+              children: [
+                 SizedBox(height: 30),
+                 Text(
+                  "Admin Panel",
+                  style: TextStyle(color: Colors.white, fontSize: 20),
+                ),
+                 SizedBox(height: 20),
+
+                Expanded(
+                  child: ListView(
                     children: [
-                      Text(dept['name'] ?? '',
-                          style: TextStyle(
-                              fontWeight: FontWeight.bold, fontSize: 16)),
-                      SizedBox(height: 8),
-                      Text("$subDepartmentCount قسم فرعي",
-                          style: TextStyle(fontSize: 14)),
+                      buildSidebarItem(
+                        icon: Icons.dashboard,
+                        title: "Dashboard",
+                        onTap: () {
+                          setState(() {
+                            currentPage = buildDashboardGrid();
+                            currentTitle = "Dashboard";
+                          });
+                        },
+                      ),
+                      buildSidebarItem(
+                        icon: Icons.add,
+                        title: "Add Department",
+                        onTap: () {
+                          setState(() {
+                            currentPage = AddDepartmentPage(
+                              onCreated: fetchDepartments,
+                            );
+                            currentTitle = "Add Department";
+                          });
+                        },
+                      ),
                     ],
                   ),
                 ),
-              ),
-            );
-          },
-        ),
+              ],
+            ),
+          ),
+
+          Expanded(
+            child: Column(
+              children: [
+                buildTopHeader(),
+                Expanded(child: currentPage),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

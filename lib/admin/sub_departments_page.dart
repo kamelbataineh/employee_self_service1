@@ -10,7 +10,7 @@ class SubDepartmentsPage extends StatefulWidget {
   final String departmentId;
   final String departmentName;
 
-  const SubDepartmentsPage({
+   SubDepartmentsPage({
     super.key,
     required this.departmentId,
     required this.departmentName,
@@ -33,12 +33,13 @@ class _SubDepartmentsPageState extends State<SubDepartmentsPage> {
 
   Future<void> loadSubDepartments() async {
     setState(() => loading = true);
+
     final prefs = await SharedPreferences.getInstance();
     token = prefs.getString("token");
 
     try {
       final res = await http.get(
-        Uri.parse('${getDepartmentById(widget.departmentId)}'),
+        Uri.parse(getDepartmentById(widget.departmentId)),
         headers: {
           "Content-Type": "application/json",
           "Authorization": "Bearer $token",
@@ -48,31 +49,95 @@ class _SubDepartmentsPageState extends State<SubDepartmentsPage> {
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
 
-        // null-safe للأقسام الفرعية
         setState(() {
           subDepartments = List<Map<String, dynamic>>.from(
-              (data['subDepartments'] ?? []));
+            data['subDepartments'] ?? [],
+          );
           loading = false;
         });
       } else {
         setState(() => loading = false);
       }
     } catch (e) {
-      print("Exception: $e");
       setState(() => loading = false);
     }
+  }
+
+  Widget header() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(20),
+      margin: const EdgeInsets.all(10),
+      decoration: BoxDecoration(
+        color: Colors.black,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            widget.departmentName,
+            style:  TextStyle(
+              color: Colors.white,
+              fontSize: 20,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+           SizedBox(height: 5),
+          Text(
+            "Sub Departments",
+            style: TextStyle(color: Colors.grey.shade300),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget subCard(Map sub) {
+    return Container(
+      margin: const EdgeInsets.all(10),
+      padding: const EdgeInsets.all(15),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(12),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.05),
+            blurRadius: 10,
+          )
+        ],
+      ),
+      child: ListTile(
+        title: Text(
+          sub['name'] ?? '',
+          style:  TextStyle(fontWeight: FontWeight.bold),
+        ),
+        subtitle: Text("ID: ${sub['_id'] ?? ''}"),
+        trailing:  Icon(Icons.arrow_forward_ios),
+        onTap: () {
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (_) => SubDepartmentEmployeesPage(
+                departmentId: widget.departmentId,
+                subDepartmentId: sub['_id'] ?? '',
+                subDepartmentName: sub['name'] ?? '',
+                departmentName: widget.departmentName,
+              ),
+            ),
+          );
+        },
+      ),
+    );
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text("أقسام ${widget.departmentName}"),
-        backgroundColor: Colors.black,
-      ),
+      backgroundColor: Colors.grey.shade200,
       floatingActionButton: FloatingActionButton(
+        backgroundColor: Colors.black,
         onPressed: () async {
-          // إضافة قسم فرعي جديد
           await Navigator.push(
             context,
             MaterialPageRoute(
@@ -81,38 +146,26 @@ class _SubDepartmentsPageState extends State<SubDepartmentsPage> {
               ),
             ),
           );
-          loadSubDepartments(); // إعادة تحميل بعد الإضافة
+          loadSubDepartments();
         },
-        child: Icon(Icons.add),
+        child:  Icon(Icons.add),
       ),
       body: loading
-          ? Center(child: CircularProgressIndicator())
-          : ListView.builder(
-        itemCount: subDepartments.length,
-        itemBuilder: (context, index) {
-          final sub = subDepartments[index];
-          final subName = sub['name'] ?? '';
-
-          return Card(
-            margin: EdgeInsets.all(10),
-            child: ListTile(
-              title: Text(subName),
-              trailing: Icon(Icons.arrow_forward),
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => SubDepartmentEmployeesPage(
-                      departmentId: widget.departmentId,
-                      subDepartmentId: sub['_id'] ?? '',
-                      subDepartmentName: subName,
-                    ),
-                  ),
-                );
+          ?  Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+        child: Column(
+          children: [
+            header(),
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: subDepartments.length,
+              itemBuilder: (context, index) {
+                return subCard(subDepartments[index]);
               },
             ),
-          );
-        },
+          ],
+        ),
       ),
     );
   }

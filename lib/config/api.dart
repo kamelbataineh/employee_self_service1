@@ -39,7 +39,7 @@ String employeeByDepartment(String departmentId) {
 }
 
 String getEmployeeById(String id) {
-  return  Weburl + 'employee/employees/$id';
+  return  Weburl + 'employee/$id';
 }
 
 
