@@ -86,13 +86,13 @@ class _SubDepartmentEmployeesPageState
         children: [
           Text(
             widget.subDepartmentName,
-            style:  TextStyle(
+            style: TextStyle(
               color: Colors.white,
               fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
           ),
-           SizedBox(height: 5),
+          SizedBox(height: 5),
           Text(
             widget.departmentName,
             style: TextStyle(color: Colors.grey.shade300),
@@ -110,10 +110,7 @@ class _SubDepartmentEmployeesPageState
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-          )
+          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10),
         ],
       ),
       child: ListTile(
@@ -121,12 +118,12 @@ class _SubDepartmentEmployeesPageState
           backgroundColor: Colors.black,
           child: Text(
             (emp['name'] ?? '').isNotEmpty ? emp['name'][0] : '?',
-            style:  TextStyle(color: Colors.white),
+            style: TextStyle(color: Colors.white),
           ),
         ),
         title: Text(
           emp['name'] ?? '',
-          style:  TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(fontWeight: FontWeight.bold),
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -135,14 +132,12 @@ class _SubDepartmentEmployeesPageState
             Text(emp['role'] ?? ''),
           ],
         ),
-        trailing:  Icon(Icons.arrow_forward_ios, size: 16),
+        trailing: Icon(Icons.arrow_forward_ios, size: 16),
         onTap: () {
           Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => EmployeeDetailsPage(
-                employeeId: emp['_id'],
-              ),
+              builder: (_) => EmployeeDetailsPage(employeeId: emp['_id']),
             ),
           );
         },
@@ -175,27 +170,27 @@ class _SubDepartmentEmployeesPageState
 
           if (result == true) fetchEmployees();
         },
-        child:  Icon(Icons.add),
+        child: Icon(Icons.add),
       ),
       body: loading
-          ?  Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator())
           : employees.isEmpty
-          ?  Center(child: Text("لا يوجد موظفين"))
+          ? Center(child: Text("لا يوجد موظفين"))
           : SingleChildScrollView(
-        child: Column(
-          children: [
-            header(),
-            ListView.builder(
-              shrinkWrap: true,
-              physics:  NeverScrollableScrollPhysics(),
-              itemCount: employees.length,
-              itemBuilder: (context, index) {
-                return employeeCard(employees[index]);
-              },
+              child: Column(
+                children: [
+                  header(),
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    itemCount: employees.length,
+                    itemBuilder: (context, index) {
+                      return employeeCard(employees[index]);
+                    },
+                  ),
+                ],
+              ),
             ),
-          ],
-        ),
-      ),
     );
   }
 }

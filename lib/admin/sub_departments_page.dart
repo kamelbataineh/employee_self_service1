@@ -77,13 +77,13 @@ class _SubDepartmentsPageState extends State<SubDepartmentsPage> {
         children: [
           Text(
             widget.departmentName,
-            style:  TextStyle(
+            style: TextStyle(
               color: Colors.white,
               fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
           ),
-           SizedBox(height: 5),
+          SizedBox(height: 5),
           Text(
             "Sub Departments",
             style: TextStyle(color: Colors.grey.shade300),
@@ -101,19 +101,15 @@ class _SubDepartmentsPageState extends State<SubDepartmentsPage> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
         boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 10,
-          )
+          BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10),
         ],
       ),
       child: ListTile(
         title: Text(
           sub['name'] ?? '',
-          style:  TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(fontWeight: FontWeight.bold),
         ),
-        subtitle: Text("ID: ${sub['_id'] ?? ''}"),
-        trailing:  Icon(Icons.arrow_forward_ios),
+        trailing: Icon(Icons.arrow_forward_ios),
         onTap: () {
           Navigator.push(
             context,
@@ -141,32 +137,31 @@ class _SubDepartmentsPageState extends State<SubDepartmentsPage> {
           await Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => AddSubDepartmentPage(
-                departmentId: widget.departmentId,
-              ),
+              builder: (_) =>
+                  AddSubDepartmentPage(departmentId: widget.departmentId),
             ),
           );
           loadSubDepartments();
         },
-        child:  Icon(Icons.add),
+        child: Icon(Icons.add),
       ),
       body: loading
-          ?  Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
-        child: Column(
-          children: [
-            header(),
-            ListView.builder(
-              shrinkWrap: true,
-              physics: const NeverScrollableScrollPhysics(),
-              itemCount: subDepartments.length,
-              itemBuilder: (context, index) {
-                return subCard(subDepartments[index]);
-              },
+              child: Column(
+                children: [
+                  header(),
+                  ListView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: subDepartments.length,
+                    itemBuilder: (context, index) {
+                      return subCard(subDepartments[index]);
+                    },
+                  ),
+                ],
+              ),
             ),
-          ],
-        ),
-      ),
     );
   }
 }

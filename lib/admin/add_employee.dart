@@ -23,17 +23,35 @@ class AddEmployeePage extends StatefulWidget {
 }
 
 class _AddEmployeePageState extends State<AddEmployeePage> {
-  final nameController = TextEditingController();
-  final phoneController = TextEditingController();
-  final ageController = TextEditingController();
-  final idController = TextEditingController();
-  final roleController = TextEditingController();
-  final passwordController = TextEditingController();
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
+  final TextEditingController ageController = TextEditingController();
+  final TextEditingController roleController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
 
   bool loading = false;
 
+  @override
+  void dispose() {
+    nameController.dispose();
+    phoneController.dispose();
+    ageController.dispose();
+    roleController.dispose();
+    passwordController.dispose();
+    emailController.dispose();
+    super.dispose();
+  }
+
   Future<void> submitEmployee() async {
-    if (nameController.text.isEmpty || idController.text.isEmpty) return;
+    if (nameController.text.trim().isEmpty ||
+        emailController.text.trim().isEmpty ||
+        passwordController.text.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("الاسم + الإيميل + كلمة المرور مطلوبين")),
+      );
+      return;
+    }
 
     setState(() => loading = true);
 
@@ -41,11 +59,11 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
     final token = prefs.getString("token") ?? "";
 
     final body = {
-      "name": nameController.text,
-      "phone": phoneController.text,
+      "name": nameController.text.trim(),
+      "email": emailController.text.trim(),
+      "phone": phoneController.text.trim(),
       "age": int.tryParse(ageController.text) ?? 0,
-      "employeeId": idController.text,
-      "role": roleController.text,
+      "role": roleController.text.trim(),
       "password": passwordController.text,
       "departmentId": widget.departmentId,
       "subDepartmentId": widget.subDepartmentId,
@@ -63,23 +81,27 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
 
       final data = jsonDecode(res.body);
 
+      if (!mounted) return;
+
       if (res.statusCode == 200 || res.statusCode == 201) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(data["message"] ?? "تمت الإضافة")),
+          SnackBar(content: Text(data["message"] ?? "تمت الإضافة بنجاح")),
         );
-
         Navigator.pop(context, true);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text(data["message"] ?? "حدث خطأ")),
         );
       }
-    } catch (e) {
+    } catch (_) {
+      if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("خطأ في الاتصال")),
+        const SnackBar(content: Text("خطأ في الاتصال بالسيرفر")),
       );
     } finally {
-      setState(() => loading = false);
+      if (mounted) {
+        setState(() => loading = false);
+      }
     }
   }
 
@@ -87,7 +109,7 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
-      margin:  EdgeInsets.only(bottom: 20),
+      margin: const EdgeInsets.only(bottom: 20),
       decoration: BoxDecoration(
         color: Colors.black,
         borderRadius: BorderRadius.circular(12),
@@ -96,23 +118,24 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
         children: [
           Text(
             widget.departmentName,
-            style:  TextStyle(color: Colors.white, fontSize: 16),
+            style: const TextStyle(color: Colors.white, fontSize: 16),
           ),
-           Icon(Icons.arrow_downward, color: Colors.white),
+          const Icon(Icons.arrow_downward, color: Colors.white),
           Text(
             widget.subDepartmentName,
-            style:  TextStyle(
-              color: Colors.grey,
-              fontSize: 14,
-            ),
+            style: const TextStyle(color: Colors.grey, fontSize: 14),
           ),
         ],
       ),
     );
   }
 
-  Widget buildField(TextEditingController c, String label,
-      {bool obscure = false, TextInputType? type}) {
+  Widget buildField(
+      TextEditingController c,
+      String label, {
+        bool obscure = false,
+        TextInputType? type,
+      }) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: TextField(
@@ -121,7 +144,7 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
         keyboardType: type,
         decoration: InputDecoration(
           labelText: label,
-          border:  OutlineInputBorder(),
+          border: const OutlineInputBorder(),
         ),
       ),
     );
@@ -132,7 +155,7 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title:  Text("Add Employee"),
+        title: const Text("Add Employee"),
         backgroundColor: Colors.black,
       ),
       body: Center(
@@ -146,14 +169,12 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
                 child: ListView(
                   children: [
                     buildField(nameController, "Name"),
+                    buildField(emailController, "Email"),
                     buildField(phoneController, "Phone"),
-                    buildField(ageController, "Age",
-                        type: TextInputType.number),
-                    buildField(idController, "Employee ID"),
+                    buildField(ageController, "Age", type: TextInputType.number),
                     buildField(roleController, "Role"),
-                    buildField(passwordController, "Password",
-                        obscure: true),
-                     SizedBox(height: 20),
+                    buildField(passwordController, "Password", obscure: true),
+                    const SizedBox(height: 20),
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
@@ -163,7 +184,7 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
                         ),
                         onPressed: loading ? null : submitEmployee,
                         child: loading
-                            ?  SizedBox(
+                            ? const SizedBox(
                           width: 20,
                           height: 20,
                           child: CircularProgressIndicator(
@@ -171,7 +192,7 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
                             strokeWidth: 2,
                           ),
                         )
-                            :  Text("Save Employee"),
+                            : const Text("Save Employee"),
                       ),
                     ),
                   ],

@@ -41,14 +41,14 @@ class _AddSubDepartmentPageState extends State<AddSubDepartmentPage> {
       if (response.statusCode == 200 || response.statusCode == 201) {
         Navigator.pop(context, true);
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(content: Text("حدث خطأ")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("حدث خطأ")));
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-         SnackBar(content: Text("خطأ في الاتصال")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("خطأ في الاتصال")));
     } finally {
       setState(() => loading = false);
     }
@@ -63,7 +63,7 @@ class _AddSubDepartmentPageState extends State<AddSubDepartmentPage> {
         color: Colors.black,
         borderRadius: BorderRadius.circular(12),
       ),
-      child:  Text(
+      child: Text(
         "Add Sub Department",
         style: TextStyle(
           color: Colors.white,
@@ -78,7 +78,7 @@ class _AddSubDepartmentPageState extends State<AddSubDepartmentPage> {
   Widget buildField() {
     return TextField(
       controller: nameController,
-      decoration:  InputDecoration(
+      decoration: InputDecoration(
         labelText: "Sub Department Name",
         border: OutlineInputBorder(),
       ),
@@ -90,7 +90,7 @@ class _AddSubDepartmentPageState extends State<AddSubDepartmentPage> {
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title:  Text("Add Sub Department"),
+        title: Text("Add Sub Department"),
         backgroundColor: Colors.black,
       ),
       body: Center(
@@ -101,25 +101,25 @@ class _AddSubDepartmentPageState extends State<AddSubDepartmentPage> {
             children: [
               header(),
               buildField(),
-               SizedBox(height: 20),
+              SizedBox(height: 20),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.black,
-                    padding:  EdgeInsets.all(14),
+                    padding: EdgeInsets.all(14),
                   ),
                   onPressed: loading ? null : createSubDepartment,
                   child: loading
-                      ?  SizedBox(
-                    width: 20,
-                    height: 20,
-                    child: CircularProgressIndicator(
-                      color: Colors.white,
-                      strokeWidth: 2,
-                    ),
-                  )
-                      :  Text("Create"),
+                      ? SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(
+                            color: Colors.white,
+                            strokeWidth: 2,
+                          ),
+                        )
+                      : Text("Create"),
                 ),
               ),
             ],

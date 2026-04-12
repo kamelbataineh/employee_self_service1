@@ -243,7 +243,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       crossAxisSpacing: 10,
       mainAxisSpacing: 10,
       children: [
-        _statCard(number: "20",label: "أيام الحضور", color: Colors.green),
+        _statCard(number: "20", label: "أيام الحضور", color: Colors.green),
         _statCard(number: "50", label: "ساعات الأسبوع", color: Colors.blue),
         _statCard(
           icon: Icons.directions_run,
@@ -258,9 +258,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
       ],
     );
   }
-
-
-
 
   Widget _statCard({
     String? number,
@@ -294,12 +291,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
           children: [
             if (icon != null) Icon(icon, size: 30, color: color),
 
-
-
             SizedBox(height: (icon != null || number != null) ? 8 : 0),
 
             Text(label, textAlign: TextAlign.center),
-            SizedBox(height: 12,),
+            SizedBox(height: 12),
 
             if (number != null)
               Text(
@@ -311,7 +306,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
                 ),
               ),
           ],
-
         ),
       ),
     );

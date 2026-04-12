@@ -2,7 +2,7 @@ import 'package:employee_self_service/theme.dart';
 import 'package:flutter/material.dart';
 
 class LeaveEarly extends StatefulWidget {
-   LeaveEarly({super.key});
+  LeaveEarly({super.key});
 
   @override
   State<LeaveEarly> createState() => _LeaveEarlyState();
@@ -21,9 +21,6 @@ class _LeaveEarlyState extends State<LeaveEarly> {
     "سبب شخصي",
     "مهمة خارج العمل",
   ];
-
-
-
 
   Future<void> pickTime() async {
     TimeOfDay initial = _getInitialTime();
@@ -57,7 +54,7 @@ class _LeaveEarlyState extends State<LeaveEarly> {
       if (hour >= 18) hour = 17;
       return TimeOfDay(hour: hour, minute: 0);
     } else {
-      return  TimeOfDay(hour: 10, minute: 0);
+      return TimeOfDay(hour: 10, minute: 0);
     }
   }
 
@@ -128,10 +125,10 @@ class _LeaveEarlyState extends State<LeaveEarly> {
         },
         child: Container(
           padding: const EdgeInsets.symmetric(vertical: 14),
-          decoration:BoxDecoration(
+          decoration: BoxDecoration(
             color: isSelected ? null : Colors.white,
             gradient: isSelected ? AppColors.primaryGradient : null,
-            border: Border.all(color:Colors.indigo.shade100),
+            border: Border.all(color: Colors.indigo.shade100),
             borderRadius: BorderRadius.circular(10),
           ),
           child: Center(
@@ -152,7 +149,7 @@ class _LeaveEarlyState extends State<LeaveEarly> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text("طلب مغادرة",style: TextStyle(fontSize: 20), ),
+        title: Text("طلب مغادرة", style: TextStyle(fontSize: 20)),
         backgroundColor: Colors.transparent,
         elevation: 0,
         flexibleSpace: Container(
@@ -160,11 +157,11 @@ class _LeaveEarlyState extends State<LeaveEarly> {
         ),
       ),
       body: Padding(
-        padding:  EdgeInsets.all(16),
+        padding: EdgeInsets.all(16),
         child: Column(
           children: [
             DropdownButtonFormField<String>(
-              hint:  Text("اختر سبب المغادرة"),
+              hint: Text("اختر سبب المغادرة"),
               value: selectedReason,
               items: reasons.map((reason) {
                 return DropdownMenuItem(value: reason, child: Text(reason));
@@ -195,7 +192,7 @@ class _LeaveEarlyState extends State<LeaveEarly> {
             TextField(
               controller: noteController,
               maxLines: 3,
-              decoration:  InputDecoration(
+              decoration: InputDecoration(
                 labelText: "ملاحظة (اختياري)",
                 border: OutlineInputBorder(),
               ),
@@ -205,7 +202,7 @@ class _LeaveEarlyState extends State<LeaveEarly> {
               width: double.infinity,
               child: ElevatedButton(
                 onPressed: submitRequest,
-                child:  Text("إرسال الطلب"),
+                child: Text("إرسال الطلب"),
               ),
             ),
           ],

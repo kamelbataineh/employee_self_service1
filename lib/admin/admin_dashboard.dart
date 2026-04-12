@@ -51,6 +51,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
         setState(() {
           departments = List<Map<String, dynamic>>.from(data);
           loading = false;
+
           currentPage = buildDashboardGrid();
         });
       } else {
@@ -64,24 +65,21 @@ class _AdminDashboardState extends State<AdminDashboard> {
   Widget buildTopHeader() {
     return Container(
       width: double.infinity,
-      padding:  EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
       decoration: BoxDecoration(
         color: Colors.white,
         border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
       ),
       child: Text(
         currentTitle,
-        style:  TextStyle(
-          fontSize: 22,
-          fontWeight: FontWeight.bold,
-        ),
+        style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
       ),
     );
   }
 
   Widget buildDashboardGrid() {
     if (loading) {
-      return  Center(child: CircularProgressIndicator());
+      return Center(child: CircularProgressIndicator());
     }
 
     return SingleChildScrollView(
@@ -92,7 +90,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
             child: GridView.builder(
               shrinkWrap: true,
               physics: const NeverScrollableScrollPhysics(),
-              gridDelegate:  SliverGridDelegateWithFixedCrossAxisCount(
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                 crossAxisCount: 3,
                 crossAxisSpacing: 20,
                 mainAxisSpacing: 20,
@@ -101,8 +99,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
               itemCount: departments.length,
               itemBuilder: (context, index) {
                 final dept = departments[index];
-                final count =
-                    (dept['subDepartments'] as List?)?.length ?? 0;
+                final count = (dept['subDepartments'] as List?)?.length ?? 0;
 
                 return InkWell(
                   onTap: () {
@@ -122,7 +119,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                         BoxShadow(
                           color: Colors.black.withOpacity(0.05),
                           blurRadius: 10,
-                        )
+                        ),
                       ],
                     ),
                     child: Column(
@@ -130,12 +127,12 @@ class _AdminDashboardState extends State<AdminDashboard> {
                       children: [
                         Text(
                           dept['name'] ?? '',
-                          style:  TextStyle(
+                          style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                         SizedBox(height: 10),
+                        SizedBox(height: 10),
                         Text("$count Sub Departments"),
                       ],
                     ),
@@ -156,7 +153,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
   }) {
     return ListTile(
       leading: Icon(icon, color: Colors.white),
-      title: Text(title, style:  TextStyle(color: Colors.white)),
+      title: Text(title, style: TextStyle(color: Colors.white)),
       onTap: onTap,
     );
   }
@@ -172,12 +169,12 @@ class _AdminDashboardState extends State<AdminDashboard> {
             color: Colors.black,
             child: Column(
               children: [
-                 SizedBox(height: 30),
-                 Text(
+                SizedBox(height: 30),
+                Text(
                   "Admin Panel",
                   style: TextStyle(color: Colors.white, fontSize: 20),
                 ),
-                 SizedBox(height: 20),
+                SizedBox(height: 20),
 
                 Expanded(
                   child: ListView(
@@ -186,6 +183,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
                         icon: Icons.dashboard,
                         title: "Dashboard",
                         onTap: () {
+                          fetchDepartments();
                           setState(() {
                             currentPage = buildDashboardGrid();
                             currentTitle = "Dashboard";
@@ -198,8 +196,15 @@ class _AdminDashboardState extends State<AdminDashboard> {
                         onTap: () {
                           setState(() {
                             currentPage = AddDepartmentPage(
-                              onCreated: fetchDepartments,
+                              onCreated: () {
+                                fetchDepartments(); // تحديث بعد الإضافة فقط
+                                setState(() {
+                                  currentPage = buildDashboardGrid();
+                                  currentTitle = "Dashboard";
+                                });
+                              },
                             );
+
                             currentTitle = "Add Department";
                           });
                         },

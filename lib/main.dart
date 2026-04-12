@@ -16,9 +16,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-        textTheme: GoogleFonts.cairoTextTheme(
-          Theme.of(context).textTheme,
-        ),
+        textTheme: GoogleFonts.cairoTextTheme(Theme.of(context).textTheme),
         appBarTheme: AppBarTheme(
           titleTextStyle: GoogleFonts.cairo(
             fontSize: 20,
@@ -34,9 +32,7 @@ class MyApp extends StatelessWidget {
           iconTheme: const IconThemeData(color: Colors.white),
         ),
       ),
-      home: kIsWeb
-          ? LoginPage()
-          : LoginScreen(),
+      home: kIsWeb ? LoginPage() : LoginScreen(),
     );
   }
 }

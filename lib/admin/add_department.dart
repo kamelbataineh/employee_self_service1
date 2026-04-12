@@ -32,9 +32,9 @@ class _AddDepartmentPageState extends State<AddDepartmentPage> {
     final name = nameController.text.trim();
 
     if (name.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-         SnackBar(content: Text("يرجى إدخال اسم القسم")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("يرجى إدخال اسم القسم")));
       return;
     }
 
@@ -51,9 +51,9 @@ class _AddDepartmentPageState extends State<AddDepartmentPage> {
       );
 
       if (response.statusCode == 201) {
-        ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(content: Text("تمت الإضافة بنجاح")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("تمت الإضافة بنجاح")));
 
         nameController.clear();
 
@@ -61,18 +61,18 @@ class _AddDepartmentPageState extends State<AddDepartmentPage> {
           widget.onCreated!();
         }
       } else if (response.statusCode == 400) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("الاسم موجود مسبقًا")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text("الاسم موجود مسبقًا")));
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-           SnackBar(content: Text("حدث خطأ")),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text("حدث خطأ")));
       }
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-         SnackBar(content: Text("خطأ في الاتصال")),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text("خطأ في الاتصال")));
     } finally {
       setState(() => loading = false);
     }
@@ -88,33 +88,27 @@ class _AddDepartmentPageState extends State<AddDepartmentPage> {
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
           boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 15,
-            )
+            BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 15),
           ],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-             Text(
+            Text(
               "إضافة قسم جديد",
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
-             SizedBox(height: 20),
+            SizedBox(height: 20),
 
             TextField(
               controller: nameController,
-              decoration:  InputDecoration(
+              decoration: InputDecoration(
                 labelText: "اسم القسم",
                 border: OutlineInputBorder(),
               ),
             ),
 
-             SizedBox(height: 20),
+            SizedBox(height: 20),
 
             SizedBox(
               width: double.infinity,
@@ -125,15 +119,15 @@ class _AddDepartmentPageState extends State<AddDepartmentPage> {
                 ),
                 onPressed: loading ? null : createDepartment,
                 child: loading
-                    ?  SizedBox(
-                  width: 20,
-                  height: 20,
-                  child: CircularProgressIndicator(
-                    color: Colors.white,
-                    strokeWidth: 2,
-                  ),
-                )
-                    :  Text("إضافة"),
+                    ? SizedBox(
+                        width: 20,
+                        height: 20,
+                        child: CircularProgressIndicator(
+                          color: Colors.white,
+                          strokeWidth: 2,
+                        ),
+                      )
+                    : Text("إضافة"),
               ),
             ),
           ],

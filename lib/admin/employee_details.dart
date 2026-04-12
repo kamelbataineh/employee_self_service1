@@ -67,18 +67,15 @@ class _EmployeeDetailsPageState extends State<EmployeeDetailsPage> {
       padding: const EdgeInsets.symmetric(vertical: 10),
       child: Text(
         title,
-        style:  TextStyle(
-          fontSize: 18,
-          fontWeight: FontWeight.bold,
-        ),
+        style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
       ),
     );
   }
 
   Widget infoBox(String title, String value) {
     return Container(
-      padding:  EdgeInsets.all(12),
-      margin:  EdgeInsets.all(6),
+      padding: EdgeInsets.all(12),
+      margin: EdgeInsets.all(6),
       decoration: BoxDecoration(
         color: Colors.grey.shade100,
         borderRadius: BorderRadius.circular(10),
@@ -87,17 +84,11 @@ class _EmployeeDetailsPageState extends State<EmployeeDetailsPage> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text(
-            title,
-            style:  TextStyle(fontSize: 12, color: Colors.grey),
-          ),
-           SizedBox(height: 5),
+          Text(title, style: TextStyle(fontSize: 12, color: Colors.grey)),
+          SizedBox(height: 5),
           Text(
             value.isEmpty ? "-" : value,
-            style:  TextStyle(
-              fontSize: 14,
-              fontWeight: FontWeight.w600,
-            ),
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
           ),
         ],
       ),
@@ -109,104 +100,99 @@ class _EmployeeDetailsPageState extends State<EmployeeDetailsPage> {
     return Scaffold(
       backgroundColor: Colors.grey.shade200,
       appBar: AppBar(
-        title:  Text("Employee Details"),
+        title: Text("Employee Details"),
         backgroundColor: Colors.black,
       ),
       body: loading
-          ?  Center(child: CircularProgressIndicator())
+          ? Center(child: CircularProgressIndicator())
           : employee == null
-          ?  Center(child: Text("No Employee Found"))
+          ? Center(child: Text("No Employee Found"))
           : SingleChildScrollView(
-        padding:  EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Container(
-              width: double.infinity,
-              padding:  EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(15),
-              ),
-              child: Row(
+              padding: EdgeInsets.all(20),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  CircleAvatar(
-                    radius: 30,
-                    backgroundColor: Colors.black,
-                    child: Text(
-                      (employee?['name'] ?? '')
-                          .toString()
-                          .isNotEmpty
-                          ? employee!['name'][0]
-                          : '?',
-                      style:  TextStyle(color: Colors.white),
+                  Container(
+                    width: double.infinity,
+                    padding: EdgeInsets.all(20),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    child: Row(
+                      children: [
+                        CircleAvatar(
+                          radius: 30,
+                          backgroundColor: Colors.black,
+                          child: Text(
+                            (employee?['name'] ?? '').toString().isNotEmpty
+                                ? employee!['name'][0]
+                                : '?',
+                            style: TextStyle(color: Colors.white),
+                          ),
+                        ),
+                        SizedBox(width: 15),
+                        Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              employee?['name'] ?? '',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              employee?['role'] ?? '',
+                              style: TextStyle(color: Colors.grey),
+                            ),
+                          ],
+                        ),
+                      ],
                     ),
                   ),
-                   SizedBox(width: 15),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
+
+                  SizedBox(height: 20),
+
+                  sectionTitle("Employee Info"),
+                  GridView.count(
+                    crossAxisCount: 3,
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    childAspectRatio: 3,
                     children: [
-                      Text(
-                        employee?['name'] ?? '',
-                        style:  TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      Text(
-                        employee?['role'] ?? '',
-                        style:  TextStyle(color: Colors.grey),
-                      ),
+                      infoBox("Employee ID", employee?['employeeId'] ?? ''),
+                      infoBox("Phone", employee?['phone'] ?? ''),
+                      infoBox("Age", employee?['age']?.toString() ?? ''),
+                      infoBox("Role", employee?['role'] ?? ''),
                     ],
-                  )
+                  ),
+
+                  sectionTitle("Department"),
+                  GridView.count(
+                    crossAxisCount: 2,
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    childAspectRatio: 3,
+                    children: [
+                      infoBox("Name", department?['name'] ?? ''),
+
+                    ],
+                  ),
+
+                  sectionTitle("Sub Department"),
+                  GridView.count(
+                    crossAxisCount: 2,
+                    shrinkWrap: true,
+                    physics: NeverScrollableScrollPhysics(),
+                    childAspectRatio: 3,
+                    children: [
+                      infoBox("Name", subDepartment?['name'] ?? ''),
+                    ],
+                  ),
                 ],
               ),
             ),
-
-             SizedBox(height: 20),
-
-            sectionTitle("Employee Info"),
-            GridView.count(
-              crossAxisCount: 3,
-              shrinkWrap: true,
-              physics:  NeverScrollableScrollPhysics(),
-              childAspectRatio: 3,
-              children: [
-                infoBox("Employee ID",
-                    employee?['employeeId'] ?? ''),
-                infoBox("Phone", employee?['phone'] ?? ''),
-                infoBox(
-                    "Age", employee?['age']?.toString() ?? ''),
-                infoBox("Role", employee?['role'] ?? ''),
-              ],
-            ),
-
-            sectionTitle("Department"),
-            GridView.count(
-              crossAxisCount: 2,
-              shrinkWrap: true,
-              physics:  NeverScrollableScrollPhysics(),
-              childAspectRatio: 3,
-              children: [
-                infoBox("Name", department?['name'] ?? ''),
-                infoBox("ID", department?['id'] ?? ''),
-              ],
-            ),
-
-            sectionTitle("Sub Department"),
-            GridView.count(
-              crossAxisCount: 2,
-              shrinkWrap: true,
-              physics:  NeverScrollableScrollPhysics(),
-              childAspectRatio: 3,
-              children: [
-                infoBox("Name", subDepartment?['name'] ?? ''),
-                infoBox("ID", subDepartment?['id'] ?? ''),
-              ],
-            ),
-          ],
-        ),
-      ),
     );
   }
 }

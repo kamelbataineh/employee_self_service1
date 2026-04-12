@@ -201,36 +201,29 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
         (specialType == "وفاة" ||
             specialType == "حج" ||
             specialType == "زواج")) {
-
       showSnack("تم إرسال الطلب بنجاح (بدون خصم رصيد)");
       return;
     }
 
     setState(() {
-
       if (leaveType == "مرضية") {
         if (days > sickLeaves) {
           showSnack("رصيد المرضية غير كافي");
           return;
         }
         sickLeaves -= days;
-      }
-
-      else if (leaveType == "عرضية") {
+      } else if (leaveType == "عرضية") {
         if (days > casualLeaves) {
           showSnack("رصيد العرضية غير كافي");
           return;
         }
         casualLeaves -= days;
       }
-
     });
 
     showSnack("تم إرسال الطلب بنجاح");
     // Navigator.pop(context);
-
   }
-
 
   void showSnack(String msg) {
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
@@ -264,10 +257,7 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
                   children: [
                     Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: Text(
-                        requestDate,
-                        textAlign: TextAlign.left,
-                      ),
+                      child: Text(requestDate, textAlign: TextAlign.left),
                     ),
                     Padding(
                       padding: const EdgeInsets.all(8.0),
@@ -417,17 +407,17 @@ class _LeaveRequestScreenState extends State<LeaveRequestScreen> {
               startDate == null ? "تاريخ البداية" : formatDate(startDate!),
               pickStartDate,
             ),
-             SizedBox(height: 10),
+            SizedBox(height: 10),
             buildDateButton(
               endDate == null ? "تاريخ النهاية" : formatDate(endDate!),
               pickEndDate,
             ),
-             SizedBox(height: 10),
+            SizedBox(height: 10),
             Text("عدد الأيام: ${calculateDays()}"),
-             SizedBox(height: 20),
+            SizedBox(height: 20),
             Text("رصيد المرضية: $sickLeaves"),
             Text("رصيد العرضية: $casualLeaves"),
-             SizedBox(height: 20),
+            SizedBox(height: 20),
             buildDateButton("إرسال الطلب", submitRequest),
           ],
         ),
