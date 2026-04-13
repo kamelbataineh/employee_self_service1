@@ -1,7 +1,9 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../config/api.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class AddDepartmentPage extends StatefulWidget {
   final VoidCallback? onCreated;
@@ -25,57 +27,72 @@ class _AddDepartmentPageState extends State<AddDepartmentPage> {
 
   Future<void> loadToken() async {
     final prefs = await SharedPreferences.getInstance();
-    token = prefs.getString("token");
+    setState(() {
+      token = prefs.getString("token");
+    });
   }
 
   Future<void> createDepartment() async {
     final name = nameController.text.trim();
 
     if (name.isEmpty) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("يرجى إدخال اسم القسم")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("fill_name".tr())),
+      );
       return;
     }
 
-    setState(() => loading = true);
+    if (token == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("no_token".tr())),
+      );
+      return;
+    }
+
+    setState(() {
+      loading = true;
+    });
 
     try {
+      final body = {
+        "name": {
+          "en": name,
+          "ar": name,
+          "fr": name
+        }
+      };
+
       final response = await http.post(
         Uri.parse(admindashboardCreate),
         headers: {
           "Content-Type": "application/json",
-          "Authorization": "Bearer $token",
+          "Accept": "application/json",
+          "Authorization": "Bearer $token"
         },
-        body: '{"name": "$name"}',
+        body: jsonEncode(body),
       );
 
       if (response.statusCode == 201) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text("تمت الإضافة بنجاح")));
-
         nameController.clear();
+        widget.onCreated?.call();
 
-        if (widget.onCreated != null) {
-          widget.onCreated!();
-        }
-      } else if (response.statusCode == 400) {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(const SnackBar(content: Text("الاسم موجود مسبقًا")));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("success".tr())),
+        );
       } else {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text("حدث خطأ")));
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("error".tr())),
+        );
       }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("خطأ في الاتصال")));
-    } finally {
-      setState(() => loading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("connection_error".tr())),
+      );
     }
+
+    setState(() {
+      loading = false;
+    });
   }
 
   @override
@@ -83,53 +100,39 @@ class _AddDepartmentPageState extends State<AddDepartmentPage> {
     return Center(
       child: Container(
         width: 450,
-        padding: const EdgeInsets.all(25),
+        padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 15),
-          ],
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              "إضافة قسم جديد",
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              "add_department".tr(),
+              style: const TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+              ),
             ),
-            SizedBox(height: 20),
-
+            const SizedBox(height: 20),
             TextField(
               controller: nameController,
               decoration: InputDecoration(
-                labelText: "اسم القسم",
-                border: OutlineInputBorder(),
+                labelText: "department_name".tr(),
+                border: const OutlineInputBorder(),
               ),
             ),
-
-            SizedBox(height: 20),
-
+            const SizedBox(height: 20),
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.black,
-                  padding: const EdgeInsets.all(14),
-                ),
                 onPressed: loading ? null : createDepartment,
                 child: loading
-                    ? SizedBox(
-                        width: 20,
-                        height: 20,
-                        child: CircularProgressIndicator(
-                          color: Colors.white,
-                          strokeWidth: 2,
-                        ),
-                      )
-                    : Text("إضافة"),
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : Text("create".tr()),
               ),
-            ),
+            )
           ],
         ),
       ),

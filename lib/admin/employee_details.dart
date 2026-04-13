@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../config/api.dart';
+import '../utils/locale_helper.dart';
 
 class EmployeeDetailsPage extends StatefulWidget {
   final String employeeId;
@@ -125,8 +126,8 @@ class _EmployeeDetailsPageState extends State<EmployeeDetailsPage> {
                           radius: 30,
                           backgroundColor: Colors.black,
                           child: Text(
-                            (employee?['name'] ?? '').toString().isNotEmpty
-                                ? employee!['name'][0]
+                            getLocalizedName(employee?['name'], context).isNotEmpty
+                                ? getLocalizedName(employee?['name'], context)[0]
                                 : '?',
                             style: TextStyle(color: Colors.white),
                           ),
@@ -136,8 +137,7 @@ class _EmployeeDetailsPageState extends State<EmployeeDetailsPage> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Text(
-                              employee?['name'] ?? '',
-                              style: TextStyle(
+                              getLocalizedName(employee?['name'], context),                              style: TextStyle(
                                 fontSize: 18,
                                 fontWeight: FontWeight.bold,
                               ),
@@ -175,8 +175,10 @@ class _EmployeeDetailsPageState extends State<EmployeeDetailsPage> {
                     physics: NeverScrollableScrollPhysics(),
                     childAspectRatio: 3,
                     children: [
-                      infoBox("Name", department?['name'] ?? ''),
-
+                      infoBox(
+                        "Name",
+                        getLocalizedName(department?['name'], context),
+                      ),
                     ],
                   ),
 
@@ -187,8 +189,10 @@ class _EmployeeDetailsPageState extends State<EmployeeDetailsPage> {
                     physics: NeverScrollableScrollPhysics(),
                     childAspectRatio: 3,
                     children: [
-                      infoBox("Name", subDepartment?['name'] ?? ''),
-                    ],
+                      infoBox(
+                        "Name",
+                        getLocalizedName(subDepartment?['name'], context),
+                      ),                    ],
                   ),
                 ],
               ),

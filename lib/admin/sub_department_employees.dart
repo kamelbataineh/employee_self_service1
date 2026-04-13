@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../config/api.dart';
+import '../utils/locale_helper.dart';
 import 'add_employee.dart';
 import 'employee_details.dart';
 
@@ -117,12 +118,14 @@ class _SubDepartmentEmployeesPageState
         leading: CircleAvatar(
           backgroundColor: Colors.black,
           child: Text(
-            (emp['name'] ?? '').isNotEmpty ? emp['name'][0] : '?',
+              getLocalizedName(emp['name'], context).isNotEmpty
+                  ? getLocalizedName(emp['name'], context)[0]
+                  : '?',
             style: TextStyle(color: Colors.white),
           ),
         ),
         title: Text(
-          emp['name'] ?? '',
+            getLocalizedName(emp['name'], context),
           style: TextStyle(fontWeight: FontWeight.bold),
         ),
         subtitle: Column(

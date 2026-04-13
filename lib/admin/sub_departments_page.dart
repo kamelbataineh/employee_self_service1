@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:employee_self_service/admin/sub_department_employees.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -29,6 +30,14 @@ class _SubDepartmentsPageState extends State<SubDepartmentsPage> {
   void initState() {
     super.initState();
     loadSubDepartments();
+  }
+
+  String getName(dynamic name) {
+    if (name is Map) {
+      final locale = context.locale.languageCode;
+      return name[locale] ?? name['en'] ?? '';
+    }
+    return name?.toString() ?? '';
   }
 
   Future<void> loadSubDepartments() async {
@@ -76,17 +85,17 @@ class _SubDepartmentsPageState extends State<SubDepartmentsPage> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            widget.departmentName,
-            style: TextStyle(
+            getName(widget.departmentName),
+            style: const TextStyle(
               color: Colors.white,
               fontSize: 20,
               fontWeight: FontWeight.bold,
             ),
           ),
-          SizedBox(height: 5),
-          Text(
+          const SizedBox(height: 5),
+          const Text(
             "Sub Departments",
-            style: TextStyle(color: Colors.grey.shade300),
+            style: TextStyle(color: Colors.grey),
           ),
         ],
       ),
@@ -106,10 +115,10 @@ class _SubDepartmentsPageState extends State<SubDepartmentsPage> {
       ),
       child: ListTile(
         title: Text(
-          sub['name'] ?? '',
-          style: TextStyle(fontWeight: FontWeight.bold),
+          getName(sub['name']),
+          style: const TextStyle(fontWeight: FontWeight.bold),
         ),
-        trailing: Icon(Icons.arrow_forward_ios),
+        trailing: const Icon(Icons.arrow_forward_ios),
         onTap: () {
           Navigator.push(
             context,
@@ -117,7 +126,7 @@ class _SubDepartmentsPageState extends State<SubDepartmentsPage> {
               builder: (_) => SubDepartmentEmployeesPage(
                 departmentId: widget.departmentId,
                 subDepartmentId: sub['_id'] ?? '',
-                subDepartmentName: sub['name'] ?? '',
+                subDepartmentName: getName(sub['name']),
                 departmentName: widget.departmentName,
               ),
             ),
@@ -137,31 +146,32 @@ class _SubDepartmentsPageState extends State<SubDepartmentsPage> {
           await Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) =>
-                  AddSubDepartmentPage(departmentId: widget.departmentId),
+              builder: (_) => AddSubDepartmentPage(
+                departmentId: widget.departmentId,
+              ),
             ),
           );
           loadSubDepartments();
         },
-        child: Icon(Icons.add),
+        child: const Icon(Icons.add),
       ),
       body: loading
-          ? Center(child: CircularProgressIndicator())
+          ? const Center(child: CircularProgressIndicator())
           : SingleChildScrollView(
-              child: Column(
-                children: [
-                  header(),
-                  ListView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    itemCount: subDepartments.length,
-                    itemBuilder: (context, index) {
-                      return subCard(subDepartments[index]);
-                    },
-                  ),
-                ],
-              ),
+        child: Column(
+          children: [
+            header(),
+            ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: subDepartments.length,
+              itemBuilder: (context, index) {
+                return subCard(subDepartments[index]);
+              },
             ),
+          ],
+        ),
+      ),
     );
   }
 }

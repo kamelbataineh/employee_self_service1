@@ -1,3 +1,5 @@
+import 'dart:convert';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -18,6 +20,7 @@ class _AddSubDepartmentPageState extends State<AddSubDepartmentPage> {
 
   Future<void> createSubDepartment() async {
     final name = nameController.text.trim();
+
     if (name.isEmpty) return;
 
     setState(() => loading = true);
@@ -26,31 +29,50 @@ class _AddSubDepartmentPageState extends State<AddSubDepartmentPage> {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString("token") ?? "";
 
+      if (token.isEmpty) {
+        setState(() => loading = false);
+        return;
+      }
+
       final url =
           "${admindashboardCreate.replaceAll('create', 'add-sub-department')}/${widget.departmentId}";
+
+      final body = {
+        "name": {
+          "en": name,
+          "ar": name,
+          "fr": name,
+        }
+      };
 
       final response = await http.post(
         Uri.parse(url),
         headers: {
           "Content-Type": "application/json",
+          "Accept": "application/json",
           "Authorization": "Bearer $token",
         },
-        body: '{"name": "$name"}',
+        body: jsonEncode(body),
       );
+
+      if (!mounted) return;
 
       if (response.statusCode == 200 || response.statusCode == 201) {
         Navigator.pop(context, true);
       } else {
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text("حدث خطأ")));
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("حدث خطأ")),
+        );
       }
     } catch (e) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("خطأ في الاتصال")));
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("خطأ في الاتصال")),
+      );
     } finally {
-      setState(() => loading = false);
+      if (mounted) {
+        setState(() => loading = false);
+      }
     }
   }
 
@@ -64,8 +86,8 @@ class _AddSubDepartmentPageState extends State<AddSubDepartmentPage> {
         borderRadius: BorderRadius.circular(12),
       ),
       child: Text(
-        "Add Sub Department",
-        style: TextStyle(
+        "add_sub_department".tr(),
+        style: const TextStyle(
           color: Colors.white,
           fontSize: 18,
           fontWeight: FontWeight.bold,
@@ -79,8 +101,8 @@ class _AddSubDepartmentPageState extends State<AddSubDepartmentPage> {
     return TextField(
       controller: nameController,
       decoration: InputDecoration(
-        labelText: "Sub Department Name",
-        border: OutlineInputBorder(),
+        labelText: "sub_department_name".tr(),
+        border: const OutlineInputBorder(),
       ),
     );
   }
@@ -90,7 +112,7 @@ class _AddSubDepartmentPageState extends State<AddSubDepartmentPage> {
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: Text("Add Sub Department"),
+        title: Text("add_sub_department".tr()),
         backgroundColor: Colors.black,
       ),
       body: Center(
@@ -101,25 +123,25 @@ class _AddSubDepartmentPageState extends State<AddSubDepartmentPage> {
             children: [
               header(),
               buildField(),
-              SizedBox(height: 20),
+              const SizedBox(height: 20),
               SizedBox(
                 width: double.infinity,
                 child: ElevatedButton(
                   style: ElevatedButton.styleFrom(
                     backgroundColor: Colors.black,
-                    padding: EdgeInsets.all(14),
+                    padding: const EdgeInsets.all(14),
                   ),
                   onPressed: loading ? null : createSubDepartment,
                   child: loading
-                      ? SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            color: Colors.white,
-                            strokeWidth: 2,
-                          ),
-                        )
-                      : Text("Create"),
+                      ? const SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      color: Colors.white,
+                      strokeWidth: 2,
+                    ),
+                  )
+                      : Text("create".tr()),
                 ),
               ),
             ],

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -44,11 +45,15 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
   }
 
   Future<void> submitEmployee() async {
-    if (nameController.text.trim().isEmpty ||
-        emailController.text.trim().isEmpty ||
-        passwordController.text.isEmpty) {
+    final name = nameController.text.trim();
+    final email = emailController.text.trim();
+    final phone = phoneController.text.trim();
+    final role = roleController.text.trim();
+    final password = passwordController.text;
+
+    if (name.isEmpty || email.isEmpty || password.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("الاسم + الإيميل + كلمة المرور مطلوبين")),
+        SnackBar(content: Text("required_fields".tr())),
       );
       return;
     }
@@ -58,13 +63,25 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString("token") ?? "";
 
+    if (token.isEmpty) {
+      setState(() => loading = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("no_token".tr())),
+      );
+      return;
+    }
+
     final body = {
-      "name": nameController.text.trim(),
-      "email": emailController.text.trim(),
-      "phone": phoneController.text.trim(),
+      "name": {
+        "en": name,
+        "ar": name,
+        "fr": name,
+      },
+      "email": email,
+      "phone": phone,
       "age": int.tryParse(ageController.text) ?? 0,
-      "role": roleController.text.trim(),
-      "password": passwordController.text,
+      "role": role,
+      "password": password,
       "departmentId": widget.departmentId,
       "subDepartmentId": widget.subDepartmentId,
     };
@@ -74,29 +91,30 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
         Uri.parse(addEmployeeToSubDepartment),
         headers: {
           "Content-Type": "application/json",
+          "Accept": "application/json",
           "Authorization": "Bearer $token",
         },
         body: jsonEncode(body),
       );
 
-      final data = jsonDecode(res.body);
+      final data = res.body.isNotEmpty ? jsonDecode(res.body) : {};
 
       if (!mounted) return;
 
       if (res.statusCode == 200 || res.statusCode == 201) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(data["message"] ?? "تمت الإضافة بنجاح")),
+          SnackBar(content: Text(data["message"] ?? "success_add".tr())),
         );
         Navigator.pop(context, true);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(data["message"] ?? "حدث خطأ")),
+          SnackBar(content: Text(data["message"] ?? "error".tr())),
         );
       }
-    } catch (_) {
+    } catch (e) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("خطأ في الاتصال بالسيرفر")),
+        SnackBar(content: Text("connection_error".tr())),
       );
     } finally {
       if (mounted) {
@@ -130,6 +148,19 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
     );
   }
 
+  String getName(dynamic name) {
+    if (name is Map) {
+      final locale = context.locale.languageCode;
+
+      return name[locale] ??
+          name['en'] ??
+          name.values.first ??
+          '';
+    }
+    return name?.toString() ?? '';
+  }
+
+
   Widget buildField(
       TextEditingController c,
       String label, {
@@ -155,7 +186,7 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
     return Scaffold(
       backgroundColor: Colors.grey[100],
       appBar: AppBar(
-        title: const Text("Add Employee"),
+        title: Text("add_employee".tr()),
         backgroundColor: Colors.black,
       ),
       body: Center(
@@ -168,12 +199,14 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
               Expanded(
                 child: ListView(
                   children: [
-                    buildField(nameController, "Name"),
-                    buildField(emailController, "Email"),
-                    buildField(phoneController, "Phone"),
-                    buildField(ageController, "Age", type: TextInputType.number),
-                    buildField(roleController, "Role"),
-                    buildField(passwordController, "Password", obscure: true),
+                    buildField(nameController, "name".tr()),
+                    buildField(emailController, "email".tr()),
+                    buildField(phoneController, "phone".tr()),
+                    buildField(ageController, "age".tr(),
+                        type: TextInputType.number),
+                    buildField(roleController, "role".tr()),
+                    buildField(passwordController, "password".tr(),
+                        obscure: true),
                     const SizedBox(height: 20),
                     SizedBox(
                       width: double.infinity,
@@ -192,7 +225,7 @@ class _AddEmployeePageState extends State<AddEmployeePage> {
                             strokeWidth: 2,
                           ),
                         )
-                            : const Text("Save Employee"),
+                            : Text("save_employee".tr()),
                       ),
                     ),
                   ],

@@ -1,5 +1,6 @@
 // login_page.dart
 import 'dart:convert';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:employee_self_service/admin/admin_dashboard.dart';
 import 'package:employee_self_service/admin/register_page.dart';
 import 'package:flutter/material.dart';
@@ -77,7 +78,7 @@ class LoginPage extends StatelessWidget {
             mainAxisSize: MainAxisSize.min,
             children: [
               Text(
-                "تسجيل دخول الأدمن",
+                "admin_login".tr(),
                 style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
               ),
               SizedBox(height: 20),

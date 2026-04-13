@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -17,9 +18,9 @@ class _AdminDashboardState extends State<AdminDashboard> {
   List<Map<String, dynamic>> departments = [];
   bool loading = true;
   String? token;
-
+  Locale selectedLocale = const Locale('en', 'US');
   Widget currentPage = const SizedBox();
-  String currentTitle = "Dashboard";
+  String currentTitle = "dashboard";
 
   @override
   void initState() {
@@ -62,20 +63,6 @@ class _AdminDashboardState extends State<AdminDashboard> {
     }
   }
 
-  Widget buildTopHeader() {
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
-      ),
-      child: Text(
-        currentTitle,
-        style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-      ),
-    );
-  }
 
   Widget buildDashboardGrid() {
     if (loading) {
@@ -106,9 +93,9 @@ class _AdminDashboardState extends State<AdminDashboard> {
                     setState(() {
                       currentPage = SubDepartmentsPage(
                         departmentId: dept['_id'],
-                        departmentName: dept['name'],
+                          departmentName: dept['name'][context.locale.languageCode] ?? '',
                       );
-                      currentTitle = dept['name'];
+                      currentTitle = dept['name'][context.locale.languageCode] ?? '';
                     });
                   },
                   child: Container(
@@ -126,14 +113,13 @@ class _AdminDashboardState extends State<AdminDashboard> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          dept['name'] ?? '',
-                          style: TextStyle(
+                          dept['name'][context.locale.languageCode] ?? '',                          style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                           ),
                         ),
                         SizedBox(height: 10),
-                        Text("$count Sub Departments"),
+                        Text("$count sub_departments".tr()),
                       ],
                     ),
                   ),
@@ -171,7 +157,7 @@ class _AdminDashboardState extends State<AdminDashboard> {
               children: [
                 SizedBox(height: 30),
                 Text(
-                  "Admin Panel",
+                  "admin_panel".tr(),
                   style: TextStyle(color: Colors.white, fontSize: 20),
                 ),
                 SizedBox(height: 20),
@@ -181,31 +167,31 @@ class _AdminDashboardState extends State<AdminDashboard> {
                     children: [
                       buildSidebarItem(
                         icon: Icons.dashboard,
-                        title: "Dashboard",
+                        title:"dashboard".tr(),
                         onTap: () {
                           fetchDepartments();
                           setState(() {
                             currentPage = buildDashboardGrid();
-                            currentTitle = "Dashboard";
+                            currentTitle = "dashboard".tr();
                           });
                         },
                       ),
                       buildSidebarItem(
                         icon: Icons.add,
-                        title: "Add Department",
+                        title: "add_department".tr(),
                         onTap: () {
                           setState(() {
                             currentPage = AddDepartmentPage(
                               onCreated: () {
-                                fetchDepartments(); // تحديث بعد الإضافة فقط
+                                fetchDepartments();
                                 setState(() {
                                   currentPage = buildDashboardGrid();
-                                  currentTitle = "Dashboard";
+                                  currentTitle = "dashboard".tr();
                                 });
                               },
                             );
 
-                            currentTitle = "Add Department";
+                            currentTitle = "add_department".tr();
                           });
                         },
                       ),
@@ -228,4 +214,62 @@ class _AdminDashboardState extends State<AdminDashboard> {
       ),
     );
   }
+  Widget buildTopHeader() {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
+      ),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+
+          Text(
+            currentTitle,
+            style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
+          ),
+
+          Row(
+            children: [
+              DropdownButtonHideUnderline(
+                child: DropdownButton<Locale>(
+                  value: selectedLocale,
+                  icon: const Icon(Icons.arrow_drop_down),
+                  onChanged: (Locale? newLocale) async {
+                    if (newLocale == null) return;
+
+                    setState(() {
+                      selectedLocale = newLocale;
+                    });
+
+                    final prefs = await SharedPreferences.getInstance();
+                    await prefs.setString('locale', newLocale.languageCode);
+
+                    context.setLocale(newLocale);
+                  },
+                  items: const [
+                    DropdownMenuItem(
+                      value: Locale('en', 'US'),
+                      child: Text("🇺🇸 EN"),
+                    ),
+                    DropdownMenuItem(
+                      value: Locale('ar', 'SA'),
+                      child: Text("🇸🇦 AR"),
+                    ),
+                    DropdownMenuItem(
+                      value: Locale('fr', 'FR'),
+                      child: Text("🇫🇷 FR"),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
 }
