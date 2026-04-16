@@ -5,123 +5,111 @@
   "add_sub_department": "Add Sub Department",
   "add_employee": "Add Employee",
   "sub_departments": "Sub Departments",
-
   "create": "Create",
   "save_employee": "Save Employee",
-
   "name": "Name",
   "email": "Email",
   "phone": "Phone",
   "age": "Age",
   "role": "Role",
   "password": "Password",
-
   "department_name": "Department Name",
   "sub_department_name": "Sub Department Name",
-
   "required_fields": "Name + Email + Password are required",
   "success_add": "Added successfully",
   "error": "Something went wrong",
   "connection_error": "Connection error",
   "duplicate_name": "Name already exists",
-
   "sub_departments_title": "Sub Departments",
   "no_employees": "No Employees",
   "employee_details": "Employee Details",
   "no_employee_found": "No Employee Found",
-
   "employee_info": "Employee Info",
   "department": "Department",
   "sub_department": "Sub Department",
   "employee_id": "Employee ID",
-
   "admin_register": "Create Admin Account",
   "create_new_account": "Create New Account",
   "company_email": "Company Email",
   "confirm_password": "Confirm Password",
   "create_account": "Create Account",
   "already_have_account": "Already have an account? Login",
-
   "admin_login": "Admin Login",
   "login": "Login",
   "login_success": "Login successful",
   "login_failed": "Login failed",
-
   "fill_all_fields": "Please fill all fields",
   "fill_required_fields": "Please fill required fields",
   "invalid_email": "Invalid email",
   "password_not_match": "Passwords do not match",
-
   "server_connection_failed": "Failed to connect to server",
-
   "company_id": "Company ID / Domain",
   "company_id_hint": "Example: COMP123",
   "employee_id_hint": "Example: EMP001",
-
   "forgot_password": "Forgot password?",
   "recover_account": "Recover account",
-
   "ess_system": "Employee Management System - ESS",
-
   "leave_request": "Leave Request",
   "leave_type": "Leave Type",
   "special_leave_type": "Special Leave Type",
   "relation": "Relation",
   "write_reason": "Write reason",
-
   "select_manager": "Select Manager",
   "select_replacement_employee": "Select Replacement Employee",
-
   "start_date": "Start Date",
   "end_date": "End Date",
   "days_count": "Number of days",
-
   "sick_balance": "Sick Leave Balance",
   "casual_balance": "Casual Leave Balance",
-
   "submit_request": "Submit Request",
   "request_sent_success": "Request sent successfully",
   "request_sent_no_balance": "Request sent successfully (no balance deduction)",
-
   "invalid_days": "Number of days does not meet requirements",
   "insufficient_sick": "Insufficient sick leave balance",
   "insufficient_casual": "Insufficient casual leave balance",
-
   "choose_start_date_first": "Please select start date first",
   "no_valid_days": "No valid days in selected range",
-
   "request_date": "Request Date",
   "request_time": "Request Time",
   "job_title": "Job Title",
-
   "early_leave": "Early Leave Request",
   "leave_reason": "Leave Reason",
   "today": "Today",
   "tomorrow": "Tomorrow",
   "select_time": "Select Time",
   "optional_note": "Note (optional)",
-
   "choose_reason": "Please choose a reason",
   "choose_time": "Please choose time",
-
   "home": "Home",
   "attendance": "Attendance",
   "leaves": "Leaves",
   "performance": "Performance",
   "profile": "Profile",
-
   "welcome": "Welcome",
   "check_in": "Check In",
   "check_out": "Check Out",
   "checked_in_at": "Checked in at",
-
   "out_of_zone": "You are outside work zone",
   "must_be_in_zone": "You must be inside work zone",
-
   "attendance_days": "Attendance Days",
   "weekly_hours": "Weekly Hours",
   "early_leave_request": "Early Leave",
   "leave_request_short": "Leave Request",
+  "logout": "Logout",
+  "login_hint": "Email or Employee ID",
+  "login_subtitle": "Enter your credentials to continue",
+  "change_language": "Change Language",
+  "employee_name": "Employee",
+  "out_zone": "You are outside work area",
+  "late": "Late",
+  "days_attendance": "Attendance Days",
+  "vacation_request": "Vacation Request",
+  "welcome_work": "Welcome to work!",
+  "attendance_recorded": "Check-in recorded",
+  "hello": "Hello",
 
-  "logout": "Logout"
+
+  "loading": "Loading",
+  "no_data": "No Data Found"
+
 }

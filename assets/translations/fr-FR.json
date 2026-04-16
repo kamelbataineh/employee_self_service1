@@ -5,122 +5,110 @@
   "add_sub_department": "Ajouter un sous-département",
   "add_employee": "Ajouter un employé",
   "sub_departments": "Sous-départements",
-
   "create": "Créer",
   "save_employee": "Enregistrer l'employé",
-
   "name": "Nom",
   "email": "Email",
   "phone": "Téléphone",
   "age": "Âge",
   "role": "Rôle",
   "password": "Mot de passe",
-
   "department_name": "Nom du département",
   "sub_department_name": "Nom du sous-département",
-
   "required_fields": "Le nom, l'email et le mot de passe sont requis",
   "success_add": "Ajout réussi",
   "error": "Une erreur s'est produite",
   "connection_error": "Erreur de connexion",
   "duplicate_name": "Le nom existe déjà",
-
   "no_employees": "Aucun employé",
   "employee_details": "Détails de l'employé",
   "no_employee_found": "Aucun employé trouvé",
-
   "employee_info": "Informations de l'employé",
   "department": "Département",
   "sub_department": "Sous-département",
   "employee_id": "ID de l'employé",
-
   "admin_register": "Créer un compte admin",
   "create_new_account": "Créer un nouveau compte",
   "company_email": "Email de l'entreprise",
   "confirm_password": "Confirmer le mot de passe",
   "create_account": "Créer un compte",
   "already_have_account": "Vous avez déjà un compte ? Se connecter",
-
   "admin_login": "Connexion admin",
   "login": "Se connecter",
   "login_success": "Connexion réussie",
   "login_failed": "Échec de la connexion",
-
   "fill_all_fields": "Veuillez remplir tous les champs",
   "fill_required_fields": "Veuillez remplir les champs requis",
   "invalid_email": "Email invalide",
   "password_not_match": "Les mots de passe ne correspondent pas",
-
   "server_connection_failed": "Échec de connexion au serveur",
-
   "company_id": "ID de l'entreprise / domaine",
   "company_id_hint": "Exemple : COMP123",
   "employee_id_hint": "Exemple : EMP001",
-
   "forgot_password": "Mot de passe oublié ?",
   "recover_account": "Récupérer le compte",
-
   "ess_system": "Système de gestion des employés",
-
   "leave_request": "Demande de congé",
   "leave_type": "Type de congé",
   "special_leave_type": "Type de congé spécial",
   "relation": "Lien de parenté",
   "write_reason": "Écrire la raison",
-
   "select_manager": "Choisir le manager",
   "select_replacement_employee": "Choisir un employé remplaçant",
-
   "start_date": "Date de début",
   "end_date": "Date de fin",
   "days_count": "Nombre de jours",
-
   "sick_balance": "Solde maladie",
   "casual_balance": "Solde congé occasionnel",
-
   "submit_request": "Envoyer la demande",
   "request_sent_success": "Demande envoyée avec succès",
   "request_sent_no_balance": "Demande envoyée sans déduction",
-
   "invalid_days": "Nombre de jours invalide",
   "insufficient_sick": "Solde maladie insuffisant",
   "insufficient_casual": "Solde insuffisant",
-
   "choose_start_date_first": "Choisissez d'abord la date de début",
   "no_valid_days": "Aucun jour valide",
-
   "request_date": "Date de demande",
   "request_time": "Heure de demande",
   "job_title": "Poste",
-
   "early_leave": "Demande de sortie anticipée",
   "leave_reason": "Raison de départ",
   "today": "Aujourd'hui",
   "tomorrow": "Demain",
   "select_time": "Choisir l'heure",
   "optional_note": "Note (optionnel)",
-
   "choose_reason": "Choisir une raison",
   "choose_time": "Choisir l'heure",
-
   "home": "Accueil",
   "attendance": "Présence",
   "leaves": "Congés",
   "performance": "Performance",
   "profile": "Profil",
-
   "welcome": "Bienvenue",
   "check_in": "Pointage d'entrée",
   "check_out": "Pointage de sortie",
   "checked_in_at": "Entrée enregistrée",
-
   "out_of_zone": "Vous êtes hors zone",
   "must_be_in_zone": "Vous devez être dans la zone",
-
   "attendance_days": "Jours de présence",
   "weekly_hours": "Heures hebdomadaires",
   "early_leave_request": "Sortie anticipée",
   "leave_request_short": "Congé",
+  "logout": "Se déconnecter",
+  "login_hint": "Email ou ID employé",
+  "login_subtitle": "Entrez vos informations pour continuer",
+  "change_language": "Changer la langue",
+  "employee_name": "Employé",
+  "out_zone": "Vous êtes hors zone de travail",
+  "late": "Retard",
+  "days_attendance": "Jours de présence",
+  "vacation_request": "Demande de congé",
+  "welcome_work": "Bienvenue au travail!",
+  "attendance_recorded": "Présence enregistrée",
+  "hello": "Bonjour",
 
-  "logout": "Se déconnecter"
+
+  "loading": "Chargement",
+  "no_data": "Aucune donnée"
+
 }

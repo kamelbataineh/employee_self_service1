@@ -27,6 +27,9 @@ const String admindashboardAddSubDepartment =
 // -------------------------
 // Employee
 // -------------------------
+
+const String employeelogin = Weburl + "employee/login";
+const String employeegetMyProfile = Weburl + "employee/me";
 const String employeeRegister = "${Weburl}employee/register";
 
 String employeeByDepartment(String departmentId) {

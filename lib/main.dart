@@ -51,8 +51,10 @@ class MyApp extends StatelessWidget {
           centerTitle: true,
         ),
       ),
+      home:  LoginScreen(),
+      // home:  LoginPage() ,
 
-      home: kIsWeb ? LoginPage() : LoginScreen(),
+      // home: kIsWeb ? LoginPage() : LoginScreen(),
     );
   }
 }

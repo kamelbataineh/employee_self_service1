@@ -1,127 +1,125 @@
 {
   "admin_panel": "لوحة التحكم",
-
   "dashboard": "الرئيسية",
   "add_department": "إضافة قسم",
   "add_sub_department": "إضافة قسم فرعي",
   "add_employee": "إضافة موظف",
   "sub_departments": "الأقسام الفرعية",
-
   "create": "إنشاء",
   "save_employee": "حفظ الموظف",
-
   "name": "الاسم",
   "email": "الإيميل",
   "phone": "الهاتف",
   "age": "العمر",
   "role": "الدور",
   "password": "كلمة المرور",
-
   "department_name": "اسم القسم",
   "sub_department_name": "اسم القسم الفرعي",
-
   "required_fields": "الاسم + الإيميل + كلمة المرور مطلوبة",
   "success_add": "تمت الإضافة بنجاح",
   "error": "حدث خطأ",
   "connection_error": "خطأ في الاتصال",
   "duplicate_name": "الاسم موجود مسبقاً",
-
   "no_employees": "لا يوجد موظفين",
   "employee_details": "تفاصيل الموظف",
   "no_employee_found": "لم يتم العثور على الموظف",
-
   "employee_info": "معلومات الموظف",
   "department": "القسم",
   "sub_department": "القسم الفرعي",
   "employee_id": "رقم الموظف",
-
   "admin_register": "إنشاء حساب أدمن",
   "create_new_account": "إنشاء حساب جديد",
   "company_email": "إيميل الشركة",
   "confirm_password": "تأكيد كلمة المرور",
   "create_account": "إنشاء الحساب",
   "already_have_account": "لديك حساب؟ تسجيل الدخول",
-
   "admin_login": "تسجيل دخول الأدمن",
   "login": "تسجيل الدخول",
   "login_success": "تم تسجيل الدخول",
   "login_failed": "فشل تسجيل الدخول",
-
   "fill_all_fields": "يرجى تعبئة جميع الحقول",
   "fill_required_fields": "يرجى تعبئة الحقول المطلوبة",
   "invalid_email": "الإيميل غير صحيح",
   "password_not_match": "كلمة المرور غير متطابقة",
-
   "server_connection_failed": "فشل الاتصال بالسيرفر",
-
   "company_id": "رقم الشركة / الدومين",
   "company_id_hint": "مثال: COMP123",
   "employee_id_hint": "مثال: EMP001",
-
   "forgot_password": "هل نسيت كلمة المرور؟",
   "recover_account": "استعادة الحساب",
-
   "ess_system": "نظام إدارة الموظفين",
-
   "leave_request": "طلب إجازة",
   "leave_type": "نوع الإجازة",
   "special_leave_type": "نوع الإجازة الخاصة",
   "relation": "صلة القرابة",
   "write_reason": "اكتب السبب",
-
   "select_manager": "اختر المدير",
   "select_replacement_employee": "اختر موظف بديل",
-
   "start_date": "تاريخ البداية",
   "end_date": "تاريخ النهاية",
   "days_count": "عدد الأيام",
-
   "sick_balance": "رصيد المرضية",
   "casual_balance": "رصيد العرضية",
-
   "submit_request": "إرسال الطلب",
   "request_sent_success": "تم إرسال الطلب بنجاح",
   "request_sent_no_balance": "تم إرسال الطلب بنجاح بدون خصم",
-
   "invalid_days": "عدد الأيام غير مطابق",
   "insufficient_sick": "رصيد المرضية غير كافي",
   "insufficient_casual": "رصيد العرضية غير كافي",
-
   "choose_start_date_first": "اختر تاريخ البداية أولاً",
   "no_valid_days": "لا يوجد أيام متاحة",
-
   "request_date": "تاريخ التقديم",
   "request_time": "وقت التقديم",
   "job_title": "المسمى الوظيفي",
-
   "early_leave": "طلب مغادرة",
   "leave_reason": "سبب المغادرة",
   "today": "اليوم",
   "tomorrow": "غداً",
   "select_time": "اختر الوقت",
   "optional_note": "ملاحظة (اختياري)",
-
   "choose_reason": "اختر السبب",
   "choose_time": "اختر الوقت",
-
   "home": "الرئيسية",
   "attendance": "الحضور",
   "leaves": "الإجازات",
   "performance": "الإنجاز",
   "profile": "البروفايل",
-
   "welcome": "مرحباً",
   "check_in": "تسجيل حضور",
   "check_out": "تسجيل انصراف",
   "checked_in_at": "تم تسجيل الحضور",
-
   "out_of_zone": "أنت خارج منطقة العمل",
   "must_be_in_zone": "يجب أن تكون داخل منطقة العمل",
-
   "attendance_days": "أيام الحضور",
   "weekly_hours": "ساعات الأسبوع",
   "early_leave_request": "طلب مغادرة",
   "leave_request_short": "طلب إجازة",
+  "logout": "تسجيل خروج",
+  "login_hint": "البريد الإلكتروني أو رقم الموظف",
+  "login_subtitle": "أدخل بياناتك للمتابعة",
+  "change_language": "تغيير اللغة",
+  "employee_name": "الموظف",
+  "out_zone": "أنت خارج منطقة العمل",
+  "late": "تأخير",
 
-  "logout": "تسجيل خروج"
+
+
+  "days_attendance": "أيام الحضور",
+  "vacation_request": "طلب إجازة",
+
+  "welcome_work": "أهلاً بك في العمل!",
+
+  "attendance_recorded": "تم تسجيل الحضور",
+
+  "hello": "مرحباً"
+
+
+
+
+  "loading": "جاري التحميل",
+  "no_data": "لا توجد بيانات",
+  "profile_screen": "الملف الشخصي"
+
+
+
 }

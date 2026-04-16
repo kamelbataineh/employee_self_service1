@@ -1,9 +1,14 @@
+import 'package:easy_localization/easy_localization.dart';
 import 'package:employee_self_service/LeaveEarly.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
+import 'dart:convert';
+import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
 
 import 'LeaveRequestScreen.dart';
 import 'ProfileScreen.dart';
+import 'config/api.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key});
@@ -19,29 +24,61 @@ class _DashboardScreenState extends State<DashboardScreen> {
   String? checkInTime;
   int selectedIndex = 0;
 
+  Map<String, dynamic>? employee;
+  String lang = "en";
+
   @override
   void initState() {
     super.initState();
+    fetchEmployee();
 
-    Timer.periodic(Duration(minutes: 1), (timer) {
+    Timer.periodic(const Duration(minutes: 1), (timer) {
       setState(() {
         currentTime = DateTime.now();
       });
     });
   }
 
+  Future<void> fetchEmployee() async {
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      final token = prefs.getString("token");
+
+      if (token == null) return;
+
+      final response = await http.get(
+        Uri.parse(employeegetMyProfile),
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": "Bearer $token",
+        },
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+
+        setState(() {
+          employee = data["employee"];
+        });
+      } else {
+        print("Error loading employee: ${response.body}");
+      }
+    } catch (e) {
+      print("fetchEmployee error: $e");
+    }
+  }
   void handleCheckIn() {
     if (!isInZone) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text("يجب أن تكون داخل منطقة العمل")));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("must_be_in_zone".tr())),
+      );
       return;
     }
 
     setState(() {
       isCheckedIn = true;
       checkInTime =
-          "${currentTime.hour}:${currentTime.minute.toString().padLeft(2, '0')}";
+      "${currentTime.hour}:${currentTime.minute.toString().padLeft(2, '0')}";
     });
   }
 
@@ -52,40 +89,25 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
   }
 
-  //
-  //
-  /////////////////////////////////////////
-  /////////////////////////////////////////
-  /////////////////////////////////////////
-  //
-  //
   @override
   Widget build(BuildContext context) {
+    lang = Localizations.localeOf(context).languageCode;
+
     return Scaffold(
-      backgroundColor: Color(0xfff5f7fb),
+      backgroundColor: const Color(0xfff5f7fb),
       body: SafeArea(child: getSelectedPage()),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: selectedIndex,
-        onTap: (index) {
-          setState(() {
-            selectedIndex = index;
-          });
-        },
+        onTap: (index) => setState(() => selectedIndex = index),
         type: BottomNavigationBarType.fixed,
         selectedItemColor: Colors.indigo,
         unselectedItemColor: Colors.grey,
         items: [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: "الرئيسية"),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.fingerprint),
-            label: "الحضور",
-          ),
-          BottomNavigationBarItem(icon: Icon(Icons.event), label: "الإجازات"),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.bar_chart),
-            label: "الإنجاز",
-          ),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: "البروفايل"),
+          BottomNavigationBarItem(icon: Icon(Icons.home), label: "home".tr()),
+          BottomNavigationBarItem(icon: Icon(Icons.fingerprint), label: "attendance".tr()),
+          BottomNavigationBarItem(icon: Icon(Icons.event), label: "leaves".tr()),
+          BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: "performance".tr()),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: "profile".tr()),
         ],
       ),
     );
@@ -99,12 +121,10 @@ class _DashboardScreenState extends State<DashboardScreen> {
         const SizedBox(height: 16),
 
         if (isInZone && !isCheckedIn) _buildCheckInCard(),
-
         if (isCheckedIn) _buildCheckedInCard(),
-
         if (!isInZone) _buildOutOfZoneCard(),
 
-        SizedBox(height: 16),
+        const SizedBox(height: 16),
         _buildStats(),
       ],
     );
@@ -115,78 +135,98 @@ class _DashboardScreenState extends State<DashboardScreen> {
       case 0:
         return _homeContent();
       case 1:
-        return Center(child: Text("الحضور"));
+        return Center(child: Text("attendance".tr()));
       case 2:
-        return Center(child: Text("الإجازات"));
+        return Center(child: Text("leaves".tr()));
       case 3:
-        return Center(child: Text("الإنجاز"));
+        return Center(child: Text("performance".tr()));
       case 4:
-        return ProfileScreen();
+        return const ProfileScreen();
       default:
         return _homeContent();
     }
   }
 
   Widget _buildHeader() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(colors: [Colors.indigo, Colors.blue]),
-        borderRadius: BorderRadius.circular(20),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+    return Stack(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: const BoxDecoration(
+            gradient: LinearGradient(colors: [Colors.indigo, Colors.blue]),
+            borderRadius: BorderRadius.all(Radius.circular(20)),
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "${"hello".tr()}, ${employee?['name']?[lang] ?? '...'}",
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 20,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  Text(
+                    "${employee?['role'] ?? ''}",
+                    style: const TextStyle(color: Colors.white70),
+                  ),
+                ],
+              ),
               Text(
-                "مرحباً، أحمد",
-                style: TextStyle(
+                "${currentTime.hour}:${currentTime.minute.toString().padLeft(2, '0')}",
+                style: const TextStyle(
                   color: Colors.white,
-                  fontSize: 20,
+                  fontSize: 26,
                   fontWeight: FontWeight.bold,
                 ),
               ),
-              Text("مطور برمجيات", style: TextStyle(color: Colors.white70)),
             ],
           ),
-          Text(
-            "${currentTime.hour}:${currentTime.minute.toString().padLeft(2, '0')}",
-            style: TextStyle(
-              color: Colors.white,
-              fontSize: 26,
-              fontWeight: FontWeight.bold,
-            ),
+        ),
+        Positioned(
+          top: 40,
+          right: 20,
+          child: PopupMenuButton<Locale>(
+            icon:  Icon(Icons.language, color: Colors.black),
+            onSelected: (Locale locale) async {
+              await context.setLocale(locale);
+            },
+            itemBuilder: (context) => const [
+              PopupMenuItem(value: Locale('ar', 'SA'), child: Text("🇯🇴 عربي")),
+              PopupMenuItem(value: Locale('en', 'US'), child: Text("🇺🇸 English")),
+              PopupMenuItem(value: Locale('fr', 'FR'), child: Text("🇫🇷 Français")),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
   Widget _buildCheckInCard() {
     return Container(
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         gradient: LinearGradient(colors: [Colors.green, Colors.teal]),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.all(Radius.circular(20)),
       ),
       child: Column(
         children: [
-          Icon(Icons.fingerprint, size: 80, color: Colors.white),
-          SizedBox(height: 10),
+          const Icon(Icons.fingerprint, size: 80, color: Colors.white),
+          const SizedBox(height: 10),
+
           Text(
-            "أهلاً بك في العمل!",
-            style: TextStyle(color: Colors.white, fontSize: 20),
+            "welcome_work".tr(),
+            style: const TextStyle(color: Colors.white, fontSize: 20),
           ),
-          SizedBox(height: 10),
+
+          const SizedBox(height: 10),
           ElevatedButton(
             onPressed: handleCheckIn,
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.white,
-              foregroundColor: Colors.green,
-            ),
-            child: Text("تسجيل حضور"),
+            child: Text("check_in".tr()),
           ),
         ],
       ),
@@ -196,22 +236,22 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _buildCheckedInCard() {
     return Container(
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         gradient: LinearGradient(colors: [Colors.indigo, Colors.blue]),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.all(Radius.circular(20)),
       ),
       child: Column(
         children: [
-          Icon(Icons.check_circle, color: Colors.white, size: 60),
-          SizedBox(height: 10),
+          const Icon(Icons.check_circle, color: Colors.white, size: 60),
+          const SizedBox(height: 10),
           Text(
-            "تم تسجيل الحضور: $checkInTime",
-            style: TextStyle(color: Colors.white),
+            "${"attendance_recorded".tr()}: $checkInTime",
+            style: const TextStyle(color: Colors.white),
           ),
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
           ElevatedButton(
             onPressed: handleCheckOut,
-            child: Text("تسجيل انصراف"),
+            child: Text("check_out".tr()),
           ),
         ],
       ),
@@ -221,15 +261,18 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _buildOutOfZoneCard() {
     return Container(
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         gradient: LinearGradient(colors: [Colors.red, Colors.deepOrange]),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.all(Radius.circular(20)),
       ),
       child: Column(
         children: [
-          Icon(Icons.warning, color: Colors.white, size: 60),
-          SizedBox(height: 10),
-          Text("أنت خارج منطقة العمل", style: TextStyle(color: Colors.white)),
+          const Icon(Icons.warning, color: Colors.white, size: 60),
+          const SizedBox(height: 10),
+          Text(
+            "out_of_zone".tr(),
+            style: const TextStyle(color: Colors.white),
+          ),
         ],
       ),
     );
@@ -238,23 +281,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
   Widget _buildStats() {
     return GridView.count(
       shrinkWrap: true,
-      physics: NeverScrollableScrollPhysics(),
+      physics: const NeverScrollableScrollPhysics(),
       crossAxisCount: 2,
       crossAxisSpacing: 10,
       mainAxisSpacing: 10,
       children: [
-        _statCard(number: "20", label: "أيام الحضور", color: Colors.green),
-        _statCard(number: "50", label: "ساعات الأسبوع", color: Colors.blue),
-        _statCard(
-          icon: Icons.directions_run,
-          label: "طلب مغادرة",
-          color: Colors.purple,
-        ),
-        _statCard(
-          icon: Icons.event_available,
-          label: "طلب إجازة",
-          color: Colors.orange,
-        ),
+        _statCard(number: "20", label: "days_attendance".tr(), color: Colors.green),
+        _statCard(number: "50", label: "weekly_hours".tr(), color: Colors.blue),
+        _statCard(icon: Icons.directions_run, label: "leave_request".tr(), color: Colors.purple),
+        _statCard(icon: Icons.event_available, label: "vacation_request".tr(), color: Colors.orange),
       ],
     );
   }
@@ -267,17 +302,11 @@ class _DashboardScreenState extends State<DashboardScreen> {
   }) {
     return GestureDetector(
       onTap: () {
-        if (label == "طلب مغادرة") {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => LeaveEarly()),
-          );
+        if (label == "leave_request".tr()) {
+          Navigator.push(context, MaterialPageRoute(builder: (_) => LeaveEarly()));
         }
-        if (label == "طلب إجازة") {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => LeaveRequestScreen()),
-          );
+        if (label == "vacation_request".tr()) {
+          Navigator.push(context, MaterialPageRoute(builder: (_) => LeaveRequestScreen()));
         }
       },
       child: Container(
@@ -290,20 +319,13 @@ class _DashboardScreenState extends State<DashboardScreen> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             if (icon != null) Icon(icon, size: 30, color: color),
-
-            SizedBox(height: (icon != null || number != null) ? 8 : 0),
-
+            const SizedBox(height: 8),
             Text(label, textAlign: TextAlign.center),
-            SizedBox(height: 12),
-
+            const SizedBox(height: 12),
             if (number != null)
               Text(
                 number,
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.bold,
-                  color: color,
-                ),
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: color),
               ),
           ],
         ),

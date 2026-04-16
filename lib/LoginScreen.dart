@@ -1,8 +1,11 @@
 import 'dart:convert';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:employee_self_service/DashboardScreen.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
+
+import 'config/api.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -12,68 +15,52 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController companyIdController = TextEditingController();
-  final TextEditingController employeeIdController = TextEditingController();
+  final TextEditingController loginController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
 
   bool loading = false;
-
-  void handleLogin() async {
-    if (companyIdController.text.isEmpty ||
-        employeeIdController.text.isEmpty ||
-        passwordController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("جميع الحقول مطلوبة")),
-      );
-      return;
-    }
-
+  Future<void> handleLogin() async {
     setState(() => loading = true);
 
     try {
-      final res = await http.post(
-        Uri.parse("http://YOUR_SERVER/api/employee/login"),
+      final url = Uri.parse(employeelogin);
+
+      final response = await http.post(
+        url,
         headers: {"Content-Type": "application/json"},
         body: jsonEncode({
-          "employeeId": employeeIdController.text.trim(),
-          "password": passwordController.text,
-          "companyId": companyIdController.text.trim(),
+          "identifier": loginController.text.trim(),
+          "password": passwordController.text.trim(),
         }),
       );
 
-      final data = jsonDecode(res.body);
+      final data = jsonDecode(response.body);
 
-      if (res.statusCode == 200) {
+      if (response.statusCode == 200) {
+        final token = data["token"];
+
+        // حفظ التوكن
         final prefs = await SharedPreferences.getInstance();
-        await prefs.setString("token", data["token"]);
+        await prefs.setString("token", token);
 
+        // انتقال للداشبورد
         if (!mounted) return;
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(data["message"] ?? "تم تسجيل الدخول")),
-        );
 
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => DashboardScreen()),
+          MaterialPageRoute(builder: (_) => const DashboardScreen()),
         );
       } else {
-        if (!mounted) return;
-
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(data["message"] ?? "فشل تسجيل الدخول")),
+          SnackBar(content: Text(data["message"] ?? "Login failed")),
         );
       }
     } catch (e) {
-      if (!mounted) return;
-
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("خطأ في الاتصال بالسيرفر")),
+        SnackBar(content: Text("Error: $e")),
       );
     } finally {
-      if (mounted) {
-        setState(() => loading = false);
-      }
+      if (mounted) setState(() => loading = false);
     }
   }
 
@@ -99,129 +86,149 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Container(
-        width: double.infinity,
-        height: double.infinity,
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [Color(0xFFEFF6FF), Colors.white],
-            begin: Alignment.topCenter,
-            end: Alignment.bottomCenter,
-          ),
-        ),
-        child: Center(
-          child: Container(
-            constraints: BoxConstraints(maxWidth: 400),
-            padding: const EdgeInsets.all(20),
+      body: Stack(
+        children: [
+          Container(
+            width: double.infinity,
+            height: double.infinity,
+            padding: const EdgeInsets.all(16),
             decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(16),
-              boxShadow: [BoxShadow(blurRadius: 10, color: Colors.black12)],
+              gradient: LinearGradient(
+                colors: [Color(0xFFEFF6FF), Colors.white],
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+              ),
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Container(
-                  width: 80,
-                  height: 80,
-                  decoration: BoxDecoration(
-                    color: Color(0xFF2563EB),
-                    shape: BoxShape.circle,
-                  ),
-                  child: Icon(Icons.business, color: Colors.white, size: 40),
+            child: Center(
+              child: Container(
+                constraints: const BoxConstraints(maxWidth: 400),
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(16),
+                  boxShadow: const [
+                    BoxShadow(blurRadius: 10, color: Colors.black12),
+                  ],
                 ),
-                SizedBox(height: 12),
-
-                Text(
-                  "تسجيل الدخول",
-                  style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                ),
-
-                SizedBox(height: 12),
-
-                Text(
-                  "نظام إدارة الموظفين - ESS",
-                  style: TextStyle(color: Colors.grey),
-                ),
-
-                SizedBox(height: 12),
-
-                buildInputField(
-                  label: "رقم الشركة / الدومين",
-                  hint: "مثال: COMP123",
-                  icon: Icons.business,
-                  controller: companyIdController,
-                ),
-
-                SizedBox(height: 12),
-
-                buildInputField(
-                  label: "رقم الموظف",
-                  hint: "مثال: EMP001",
-                  icon: Icons.person,
-                  controller: employeeIdController,
-                ),
-
-                SizedBox(height: 12),
-
-                buildInputField(
-                  label: "كلمة المرور",
-                  hint: "••••••••",
-                  icon: Icons.lock,
-                  controller: passwordController,
-                  isPassword: true,
-                ),
-
-                SizedBox(height: 12),
-
-                ElevatedButton(
-                  onPressed: loading ? null : handleLogin,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Color(0xFF2563EB),
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 20,
-                      vertical: 10,
-                    ),
-                  ),
-                  child: loading
-                      ? const SizedBox(
-                    width: 18,
-                    height: 18,
-                    child: CircularProgressIndicator(
-                      strokeWidth: 2,
-                      color: Colors.white,
-                    ),
-                  )
-                      : Text(
-                    "تسجيل الدخول",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 14,
-                      color: Colors.black,
-                    ),
-                  ),
-                ),
-
-                SizedBox(height: 12),
-
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
                   children: [
-                    Text("هل نسيت كلمة المرور؟ "),
-                    GestureDetector(
-                      onTap: () {},
-                      child: Text(
-                        "استعادة الحساب",
-                        style: TextStyle(color: Color(0xFF2563EB)),
+                    Container(
+                      width: 80,
+                      height: 80,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF2563EB),
+                        shape: BoxShape.circle,
                       ),
+                      child: const Icon(
+                        Icons.business,
+                        color: Colors.white,
+                        size: 40,
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+
+                    Text(
+                      "login".tr(),
+                      style: const TextStyle(
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    Text(
+                      "ess_system".tr(),
+                      style: const TextStyle(color: Colors.grey),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    buildInputField(
+                      label: "email".tr() + " / " + "employee_id".tr(),
+                      hint: "example@gmail.com أو EMP-001",
+                      icon: Icons.person,
+                      controller: loginController,
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    buildInputField(
+                      label: "password".tr(),
+                      hint: "••••••••",
+                      icon: Icons.lock,
+                      controller: passwordController,
+                      isPassword: true,
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    ElevatedButton(
+                      onPressed: loading ? null : handleLogin,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF2563EB),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 20,
+                          vertical: 10,
+                        ),
+                      ),
+                      child: loading
+                          ? const SizedBox(
+                              width: 18,
+                              height: 18,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                color: Colors.white,
+                              ),
+                            )
+                          : Text(
+                              "login".tr(),
+                              style: const TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 14,
+                                color: Colors.black,
+                              ),
+                            ),
+                    ),
+
+                    const SizedBox(height: 12),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text("forgot_password".tr()),
+                        GestureDetector(
+                          onTap: () {},
+                          child: Text(
+                            "recover_account".tr(),
+                            style: const TextStyle(color: Color(0xFF2563EB)),
+                          ),
+                        ),
+                      ],
                     ),
                   ],
                 ),
+              ),
+            ),
+          ),
+
+          Positioned(
+            top: 40,
+            right: 20,
+            child: PopupMenuButton<Locale>(
+              icon:  Icon(Icons.language, color: Colors.black),
+              onSelected: (Locale locale) async {
+                await context.setLocale(locale);
+              },
+              itemBuilder: (context) => const [
+                PopupMenuItem(value: Locale('ar', 'SA'), child: Text("🇯🇴 عربي")),
+                PopupMenuItem(value: Locale('en', 'US'), child: Text("🇺🇸 English")),
+                PopupMenuItem(value: Locale('fr', 'FR'), child: Text("🇫🇷 Français")),
               ],
             ),
           ),
-        ),
+        ],
       ),
     );
   }
