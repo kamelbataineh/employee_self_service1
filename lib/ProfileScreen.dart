@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:employee_self_service/widgets/app_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -64,12 +65,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return Scaffold(
       backgroundColor: const Color(0xfff4f6fb),
 
-      appBar: AppBar(
-        title: Text("profile".tr()),
-        centerTitle: true,
-        elevation: 0,
-        backgroundColor: Colors.indigo,
-      ),
 
       body: loading
           ? const Center(child: CircularProgressIndicator())
@@ -248,6 +243,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ],
       ),
+
     );
   }
 }

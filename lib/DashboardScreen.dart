@@ -1,5 +1,6 @@
 import 'package:easy_localization/easy_localization.dart';
 import 'package:employee_self_service/LeaveEarly.dart';
+import 'package:employee_self_service/widgets/app_drawer.dart';
 import 'package:flutter/material.dart';
 import 'dart:async';
 import 'dart:convert';
@@ -89,11 +90,33 @@ class _DashboardScreenState extends State<DashboardScreen> {
     });
   }
 
+
+  String getAppBarTitle() {
+    switch (selectedIndex) {
+      case 0:
+        return "home".tr();
+      case 1:
+        return "attendance".tr();
+      case 2:
+        return "leaves".tr();
+      case 3:
+        return "performance".tr();
+      case 4:
+        return "profile".tr();
+      default:
+        return "home".tr();
+    }
+  }
   @override
   Widget build(BuildContext context) {
     lang = Localizations.localeOf(context).languageCode;
 
     return Scaffold(
+      appBar: AppBar(
+        title: Text(getAppBarTitle()),
+        backgroundColor: Colors.indigo,
+      ),
+
       backgroundColor: const Color(0xfff5f7fb),
       body: SafeArea(child: getSelectedPage()),
       bottomNavigationBar: BottomNavigationBar(
@@ -110,6 +133,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
           BottomNavigationBarItem(icon: Icon(Icons.person), label: "profile".tr()),
         ],
       ),
+      drawer: AppDrawer(),
     );
   }
 
