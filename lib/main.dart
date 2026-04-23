@@ -5,6 +5,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import 'SplashCheck.dart';
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await EasyLocalization.ensureInitialized();
@@ -51,10 +53,10 @@ class MyApp extends StatelessWidget {
           centerTitle: true,
         ),
       ),
-      home:  LoginScreen(),
+      // home:  LoginScreen(),
       // home:  LoginPage() ,
-
-      // home: kIsWeb ? LoginPage() : LoginScreen(),
+// home: kIsWeb ? LoginPage() : LoginScreen(),
+      home: const SplashCheck(),
     );
   }
 }

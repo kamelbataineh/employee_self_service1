@@ -110,6 +110,9 @@
 
 
   "loading": "Loading",
-  "no_data": "No Data Found"
+  "no_data": "No Data Found",
 
+
+  "not_checked_in": "Not Checked In",
+  "checked_in": "Checked In"
 }

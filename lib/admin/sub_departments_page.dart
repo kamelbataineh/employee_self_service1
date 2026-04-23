@@ -55,19 +55,33 @@ class _SubDepartmentsPageState extends State<SubDepartmentsPage> {
         },
       );
 
+      print("STATUS CODE: ${res.statusCode}");
+      print("RAW BODY: ${res.body}");
+
       if (res.statusCode == 200) {
         final data = jsonDecode(res.body);
 
+        print("DECODED DATA: $data");
+
+        final raw = data['subDepartments'];
+
+        print("SUB DEPARTMENTS RAW: $raw");
+
         setState(() {
-          subDepartments = List<Map<String, dynamic>>.from(
-            data['subDepartments'] ?? [],
-          );
+          subDepartments = (raw as List)
+              .map((e) => Map<String, dynamic>.from(e))
+              .toList();
+
           loading = false;
         });
+
+        print("FINAL LIST: $subDepartments");
       } else {
+        print("ERROR RESPONSE: ${res.body}");
         setState(() => loading = false);
       }
     } catch (e) {
+      print("CATCH ERROR: $e");
       setState(() => loading = false);
     }
   }

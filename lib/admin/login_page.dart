@@ -41,10 +41,11 @@ class LoginPage extends StatelessWidget {
       if (response.statusCode == 200) {
         final token = data['token'];
         final adminId = data['admin']?['_id'];
-
         final prefs = await SharedPreferences.getInstance();
+
         await prefs.setString("token", token);
         await prefs.setString("adminId", adminId ?? "");
+        await prefs.setString("role", "admin");
 
         showSnack(context, data['message'] ?? "تم تسجيل الدخول");
 

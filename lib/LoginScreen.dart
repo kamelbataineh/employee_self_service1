@@ -38,12 +38,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (response.statusCode == 200) {
         final token = data["token"];
-
-        // حفظ التوكن
         final prefs = await SharedPreferences.getInstance();
-        await prefs.setString("token", token);
 
-        // انتقال للداشبورد
+        await prefs.setString("token", token);
+        await prefs.setString("role", "employee");
+
         if (!mounted) return;
 
         Navigator.pushReplacement(

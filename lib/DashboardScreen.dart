@@ -9,6 +9,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'LeaveRequestScreen.dart';
 import 'ProfileScreen.dart';
+import 'attendance_screen.dart';
 import 'config/api.dart';
 
 class DashboardScreen extends StatefulWidget {
@@ -144,7 +145,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
         _buildHeader(),
         const SizedBox(height: 16),
 
-        if (isInZone && !isCheckedIn) _buildCheckInCard(),
         if (isCheckedIn) _buildCheckedInCard(),
         if (!isInZone) _buildOutOfZoneCard(),
 
@@ -159,7 +159,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       case 0:
         return _homeContent();
       case 1:
-        return Center(child: Text("attendance".tr()));
+        return AttendanceScreen(employee: employee);
       case 2:
         return Center(child: Text("leaves".tr()));
       case 3:
@@ -211,51 +211,12 @@ class _DashboardScreenState extends State<DashboardScreen> {
             ],
           ),
         ),
-        Positioned(
-          top: 40,
-          right: 20,
-          child: PopupMenuButton<Locale>(
-            icon:  Icon(Icons.language, color: Colors.black),
-            onSelected: (Locale locale) async {
-              await context.setLocale(locale);
-            },
-            itemBuilder: (context) => const [
-              PopupMenuItem(value: Locale('ar', 'SA'), child: Text("🇯🇴 عربي")),
-              PopupMenuItem(value: Locale('en', 'US'), child: Text("🇺🇸 English")),
-              PopupMenuItem(value: Locale('fr', 'FR'), child: Text("🇫🇷 Français")),
-            ],
-          ),
-        ),
+
       ],
     );
   }
 
-  Widget _buildCheckInCard() {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: const BoxDecoration(
-        gradient: LinearGradient(colors: [Colors.green, Colors.teal]),
-        borderRadius: BorderRadius.all(Radius.circular(20)),
-      ),
-      child: Column(
-        children: [
-          const Icon(Icons.fingerprint, size: 80, color: Colors.white),
-          const SizedBox(height: 10),
 
-          Text(
-            "welcome_work".tr(),
-            style: const TextStyle(color: Colors.white, fontSize: 20),
-          ),
-
-          const SizedBox(height: 10),
-          ElevatedButton(
-            onPressed: handleCheckIn,
-            child: Text("check_in".tr()),
-          ),
-        ],
-      ),
-    );
-  }
 
   Widget _buildCheckedInCard() {
     return Container(

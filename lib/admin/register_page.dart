@@ -2,6 +2,7 @@ import 'package:employee_self_service/config/api.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'SetLocationPage.dart';
 import 'login_page.dart';
 
 class RegisterPage extends StatelessWidget {
@@ -22,10 +23,10 @@ class RegisterPage extends StatelessWidget {
   ////////////////////////////////
 
   Future<void> registerAdmin(
-    BuildContext context,
-    String email,
-    String password,
-  ) async {
+      BuildContext context,
+      String email,
+      String password,
+      ) async {
     final url = Uri.parse(adminregister);
 
     try {
@@ -39,9 +40,15 @@ class RegisterPage extends StatelessWidget {
 
       if (response.statusCode == 201) {
         showSnack(context, data['message']);
+
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => LoginPage()),
+          MaterialPageRoute(
+            builder: (context) => SetLocationPage(
+              adminId: data['adminId'],
+              token: data['token'],
+            ),
+          ),
         );
       } else {
         showSnack(context, data['message'] ?? 'حدث خطأ');
@@ -50,7 +57,6 @@ class RegisterPage extends StatelessWidget {
       showSnack(context, 'فشل الاتصال بالسيرفر');
     }
   }
-
   //////////////////////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////////////////////
 

@@ -111,9 +111,13 @@
 
   "attendance_recorded": "تم تسجيل الحضور",
 
-  "hello": "مرحباً"
+  "hello": "مرحباً",
 
 
+
+
+  "not_checked_in": "لم يتم تسجيل الدخول",
+  "checked_in": "تم تسجيل الدخول",
 
 
   "loading": "جاري التحميل",
