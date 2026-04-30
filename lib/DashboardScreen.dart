@@ -25,20 +25,24 @@ class _DashboardScreenState extends State<DashboardScreen> {
   bool isCheckedIn = false;
   String? checkInTime;
   int selectedIndex = 0;
-
+  Timer? _timer;
   Map<String, dynamic>? employee;
   String lang = "en";
 
   @override
-  void initState() {
+  initState() {
     super.initState();
-    fetchEmployee();
 
-    Timer.periodic(const Duration(minutes: 1), (timer) {
-      setState(() {
-        currentTime = DateTime.now();
-      });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      fetchEmployee();
     });
+  }
+
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
   }
 
   Future<void> fetchEmployee() async {
@@ -46,7 +50,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString("token");
 
-      if (token == null) return;
+      if (token == null || token.isEmpty) return;
 
       final response = await http.get(
         Uri.parse(employeegetMyProfile),
@@ -56,17 +60,19 @@ class _DashboardScreenState extends State<DashboardScreen> {
         },
       );
 
+      if (!mounted) return;
+
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+
+        if (!mounted) return;
 
         setState(() {
           employee = data["employee"];
         });
-      } else {
-        print("Error loading employee: ${response.body}");
       }
     } catch (e) {
-      print("fetchEmployee error: $e");
+      debugPrint("fetchEmployee error: $e");
     }
   }
   void handleCheckIn() {
@@ -159,7 +165,15 @@ class _DashboardScreenState extends State<DashboardScreen> {
       case 0:
         return _homeContent();
       case 1:
-        return AttendanceScreen(employee: employee);
+        return FutureBuilder(
+          future: Future.delayed(const Duration(milliseconds: 200)),
+          builder: (context, snapshot) {
+            if (!snapshot.hasData) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            return AttendanceScreen(employee: employee ?? {});
+          },
+        );
       case 2:
         return Center(child: Text("leaves".tr()));
       case 3:

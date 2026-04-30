@@ -7,7 +7,7 @@ plugins {
 android {
     namespace = "com.example.employee_self_service1"
     compileSdk = flutter.compileSdkVersion
-
+    ndkVersion = "28.2.13676358"
     defaultConfig {
         applicationId = "com.example.employee_self_service1"
         minSdk = flutter.minSdkVersion

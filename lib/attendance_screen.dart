@@ -20,19 +20,95 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
   bool isCheckedIn = false;
   String? checkInTime;
 
+  bool mapLoaded = false;
+  bool isLoading = false;
+
+  // 📍 موقع الشركة
   static const LatLng companyLocation =
   LatLng(32.5315927, 35.8530889);
 
+  // 📏 نصف القطر المسموح (100 متر)
+  static const double allowedRadius = 100;
+
+  @override
+  void initState() {
+    super.initState();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      setState(() {
+        mapLoaded = true;
+      });
+    });
+  }
+
+  // 🔐 التحقق من الصلاحيات
+  Future<bool> _checkPermission() async {
+    if (!await Geolocator.isLocationServiceEnabled()) return false;
+
+    LocationPermission permission = await Geolocator.checkPermission();
+
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+    }
+
+    return !(permission == LocationPermission.denied ||
+        permission == LocationPermission.deniedForever);
+  }
+
+  // 📏 حساب المسافة بين الموظف والشركة
+  double _calculateDistance(double lat, double lng) {
+    return Geolocator.distanceBetween(
+      lat,
+      lng,
+      companyLocation.latitude,
+      companyLocation.longitude,
+    );
+  }
+
+  // 🚀 تسجيل الحضور
   Future<void> handleCheckIn() async {
+    if (isLoading) return;
+
+    setState(() => isLoading = true);
+
     try {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString("token");
+
       if (token == null) return;
 
+      // 1️⃣ التحقق من GPS
+      bool permission = await _checkPermission();
+      if (!permission) {
+        _showMsg("location_disabled".tr());
+        return;
+      }
+
+      // 2️⃣ جلب الموقع
       Position position = await Geolocator.getCurrentPosition(
         desiredAccuracy: LocationAccuracy.high,
+        timeLimit: const Duration(seconds: 8),
       );
 
+      // 🚨 3️⃣ منع Fake GPS
+      if (position.isMocked) {
+        _showMsg("Fake GPS detected ❌");
+        return;
+      }
+
+      // 📏 4️⃣ التحقق من المسافة
+      double distance = _calculateDistance(
+        position.latitude,
+        position.longitude,
+      );
+
+      if (distance > allowedRadius) {
+        _showMsg("You are خارج نطاق الشركة ❌");
+        return;
+      }
+
+      // 🌐 5️⃣ إرسال للسيرفر
       final response = await http.post(
         Uri.parse(checkInUrl),
         headers: {
@@ -42,10 +118,9 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         body: jsonEncode({
           "latitude": position.latitude,
           "longitude": position.longitude,
+          "distance": distance,
         }),
       );
-
-      final data = jsonDecode(response.body);
 
       if (response.statusCode == 201) {
         setState(() {
@@ -54,48 +129,20 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
           "${DateTime.now().hour}:${DateTime.now().minute.toString().padLeft(2, '0')}";
         });
       } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(data["message"])),
-        );
+        _showMsg("Server error ❌");
       }
-    } catch (e) {}
+    } catch (e) {
+      _showMsg("Error: $e");
+    } finally {
+      if (mounted) setState(() => isLoading = false);
+    }
   }
 
-  Future<void> handleCheckOut() async {
-    try {
-      final prefs = await SharedPreferences.getInstance();
-      final token = prefs.getString("token");
-      if (token == null) return;
-
-      Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high,
-      );
-
-      final response = await http.post(
-        Uri.parse(checkOutUrl),
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": "Bearer $token",
-        },
-        body: jsonEncode({
-          "latitude": position.latitude,
-          "longitude": position.longitude,
-        }),
-      );
-
-      final data = jsonDecode(response.body);
-
-      if (response.statusCode == 200) {
-        setState(() {
-          isCheckedIn = false;
-          checkInTime = null;
-        });
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(data["message"])),
-        );
-      }
-    } catch (e) {}
+  void _showMsg(String msg) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(msg)),
+    );
   }
 
   @override
@@ -107,22 +154,28 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
         const SizedBox(height: 16),
         _buildStatusCard(),
         const SizedBox(height: 20),
-        _buildCheckInButton(),
-        const SizedBox(height: 10),
-        _buildCheckOutButton(),
+        _buildButton(),
       ],
     );
   }
 
+  // 🗺️ الخريطة
   Widget _buildMap() {
-    return Container(
+    if (!mapLoaded) {
+      return const SizedBox(
+        height: 250,
+        child: Center(child: CircularProgressIndicator()),
+      );
+    }
+
+    return SizedBox(
       height: 250,
       child: ClipRRect(
         borderRadius: BorderRadius.circular(20),
         child: GoogleMap(
           initialCameraPosition: const CameraPosition(
             target: companyLocation,
-            zoom: 17,
+            zoom: 15,
           ),
           markers: {
             const Marker(
@@ -130,13 +183,24 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
               position: companyLocation,
             ),
           },
-          zoomControlsEnabled: false,
+          circles: {
+            Circle(
+              circleId: const CircleId("allowed_zone"),
+              center: companyLocation,
+              radius: allowedRadius,
+              fillColor: Colors.green.withOpacity(0.2),
+              strokeColor: Colors.green,
+              strokeWidth: 2,
+            ),
+          },
           myLocationEnabled: false,
+          zoomControlsEnabled: false,
         ),
       ),
     );
   }
 
+  // 📊 الحالة
   Widget _buildStatusCard() {
     return Container(
       padding: const EdgeInsets.all(20),
@@ -170,18 +234,17 @@ class _AttendanceScreenState extends State<AttendanceScreen> {
     );
   }
 
-  Widget _buildCheckInButton() {
+  // 🔘 زر الحضور
+  Widget _buildButton() {
     return ElevatedButton(
-      onPressed: isCheckedIn ? null : handleCheckIn,
-      child: Text("check_in".tr()),
-    );
-  }
-
-  Widget _buildCheckOutButton() {
-    return ElevatedButton(
-      onPressed: isCheckedIn ? handleCheckOut : null,
-      style: ElevatedButton.styleFrom(backgroundColor: Colors.red),
-      child: Text("check_out".tr()),
+      onPressed: isCheckedIn || isLoading ? null : handleCheckIn,
+      child: isLoading
+          ? const SizedBox(
+        height: 18,
+        width: 18,
+        child: CircularProgressIndicator(strokeWidth: 2),
+      )
+          : Text("check_in".tr()),
     );
   }
 }

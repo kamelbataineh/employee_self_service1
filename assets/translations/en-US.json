@@ -114,5 +114,6 @@
 
 
   "not_checked_in": "Not Checked In",
-  "checked_in": "Checked In"
+  "checked_in": "Checked In",
+"company_location": "Company Location"
 }

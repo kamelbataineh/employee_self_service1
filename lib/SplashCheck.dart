@@ -18,50 +18,52 @@ class _SplashCheckState extends State<SplashCheck> {
   @override
   void initState() {
     super.initState();
-    checkLogin();
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _start();
+    });
+  }
+
+  Future<void> _start() async {
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    if (!mounted) return;
+
+    await checkLogin();
   }
 
   Future<void> checkLogin() async {
     final prefs = await SharedPreferences.getInstance();
     final token = prefs.getString("token");
 
-    await Future.delayed(const Duration(seconds: 1));
+    if (!mounted) return;
+
+    Widget nextPage;
 
     if (token == null || token.isEmpty) {
-      if (kIsWeb) {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => LoginPage()),
-        );
-      } else {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const LoginScreen()),
-        );
-      }
-      return;
+      nextPage = kIsWeb ? LoginPage() : const LoginScreen();
+    } else {
+      nextPage = kIsWeb
+          ? const AdminDashboard()
+          : const DashboardScreen();
     }
 
-    // 🌐 Web = Admin Dashboard
-    if (kIsWeb) {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const AdminDashboard()),
+    // 🔥 مهم جدًا: تأخير آمن للتنقل
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (_) => nextPage),
       );
-    }
-    // 📱 Mobile = Employee Dashboard
-    else {
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(builder: (_) => const DashboardScreen()),
-      );
-    }
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return const Scaffold(
-      body: Center(child: CircularProgressIndicator()),
+      body: Center(
+        child: CircularProgressIndicator(),
+      ),
     );
   }
 }

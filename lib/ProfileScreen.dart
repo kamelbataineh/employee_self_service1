@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:employee_self_service/widgets/app_drawer.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
@@ -32,46 +31,88 @@ class _ProfileScreenState extends State<ProfileScreen> {
       final prefs = await SharedPreferences.getInstance();
       final token = prefs.getString("token");
 
-      final res = await http.get(
+      if (token == null || token.isEmpty) {
+        if (!mounted) return;
+        setState(() => loading = false);
+        return;
+      }
+
+      final res = await http
+          .get(
         Uri.parse(employeegetMyProfile),
-        headers: {
-          "Authorization": "Bearer $token",
-          "Content-Type": "application/json",
-        },
-      );
+        headers: {"Authorization": "Bearer $token"},
+      )
+          .timeout(const Duration(seconds: 10));
+
+      if (!mounted) return;
 
       if (res.statusCode == 200) {
+        final decoded = jsonDecode(res.body);
+
         setState(() {
-          data = jsonDecode(res.body);
+          data = decoded is Map<String, dynamic> ? decoded : {};
           loading = false;
         });
       } else {
         setState(() => loading = false);
       }
     } catch (e) {
+      debugPrint("Profile error: $e");
+      if (!mounted) return;
       setState(() => loading = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final emp = data?["employee"] ?? {};
-    final dept = data?["department"]?["name"] ?? {};
-    final sub = data?["subDepartment"]?["name"] ?? {};
+    if (loading || data == null) {
+      return const Scaffold(
+        backgroundColor: Color(0xfff4f6fb),
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
 
-    String name = emp["name"]?["en"] ?? "User";
-    String firstLetter = name.isNotEmpty ? name[0].toUpperCase() : "U";
+    final emp = (data?["employee"] is Map)
+        ? data!["employee"]
+        : {};
+
+    final dept = (data?["department"] is Map)
+        ? data!["department"]
+        : {};
+
+    final sub = (data?["subDepartment"] is Map)
+        ? data!["subDepartment"]
+        : {};
+
+    String name = "User";
+    if (emp["name"] is Map) {
+      name = emp["name"]["en"]?.toString() ?? "User";
+    }
+
+    String role = safe(emp["role"]);
+    String email = safe(emp["email"]);
+    String phone = safe(emp["phone"]);
+    String employeeId = safe(emp["employeeId"]);
+
+    String deptName = "N/A";
+    if (dept["name"] is Map) {
+      deptName = dept["name"]["en"]?.toString() ?? "N/A";
+    }
+
+    String subName = "N/A";
+    if (sub["name"] is Map) {
+      subName = sub["name"]["en"]?.toString() ?? "N/A";
+    }
+
+    String firstLetter =
+    name.isNotEmpty ? name[0].toUpperCase() : "U";
 
     return Scaffold(
       backgroundColor: const Color(0xfff4f6fb),
-
-
-      body: loading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
+      body: SingleChildScrollView(
         child: Column(
           children: [
-            /// 🔵 HEADER
+            /// HEADER
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(20),
@@ -100,7 +141,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   const SizedBox(height: 10),
                   Text(
-                    safe(name),
+                    name,
                     style: const TextStyle(
                       color: Colors.white,
                       fontSize: 22,
@@ -108,7 +149,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     ),
                   ),
                   Text(
-                    safe(emp["role"]),
+                    role,
                     style: const TextStyle(color: Colors.white70),
                   ),
                 ],
@@ -117,45 +158,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
             const SizedBox(height: 20),
 
-            /// 🟦 INFO CARDS
+            /// INFO
             Padding(
               padding: const EdgeInsets.all(16),
               child: Column(
                 children: [
-                  _buildCard(
-                    icon: Icons.email,
-                    title: "email".tr(),
-                    value: safe(emp["email"]),
-                    color: Colors.blue,
-                  ),
-                  _buildCard(
-                    icon: Icons.phone,
-                    title: "phone".tr(),
-                    value: safe(emp["phone"]),
-                    color: Colors.green,
-                  ),
-                  _buildCard(
-                    icon: Icons.badge,
-                    title: "employee_id".tr(),
-                    value: safe(emp["employeeId"]),
-                    color: Colors.orange,
-                  ),
-                  _buildCard(
-                    icon: Icons.apartment,
-                    title: "department".tr(),
-                    value: dept["en"] ?? "N/A",
-                    color: Colors.purple,
-                  ),
-                  _buildCard(
-                    icon: Icons.account_tree,
-                    title: "sub_department".tr(),
-                    value: sub["en"] ?? "N/A",
-                    color: Colors.teal,
-                  ),
+                  _buildCard(Icons.email, "email".tr(), email, Colors.blue),
+                  _buildCard(Icons.phone, "phone".tr(), phone, Colors.green),
+                  _buildCard(Icons.badge, "employee_id".tr(), employeeId, Colors.orange),
+                  _buildCard(Icons.apartment, "department".tr(), deptName, Colors.purple),
+                  _buildCard(Icons.account_tree, "sub_department".tr(), subName, Colors.teal),
 
                   const SizedBox(height: 30),
 
-                  /// 🚪 LOGOUT
+                  /// LOGOUT
                   SizedBox(
                     width: double.infinity,
                     height: 50,
@@ -169,9 +185,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ),
                       ),
                       onPressed: () async {
-                        final prefs =
-                        await SharedPreferences.getInstance();
+                        final prefs = await SharedPreferences.getInstance();
                         await prefs.remove("token");
+
+                        if (!context.mounted) return;
 
                         Navigator.pushAndRemoveUntil(
                           context,
@@ -192,13 +209,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  /// 🔥 CARD UI (Company Style)
-  Widget _buildCard({
-    required IconData icon,
-    required String title,
-    required String value,
-    required Color color,
-  }) {
+  Widget _buildCard(
+      IconData icon,
+      String title,
+      String value,
+      Color color,
+      ) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(14),
@@ -226,10 +242,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
               children: [
                 Text(
                   title,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey,
-                  ),
+                  style: const TextStyle(fontSize: 12, color: Colors.grey),
                 ),
                 Text(
                   value,
@@ -243,7 +256,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ],
       ),
-
     );
   }
 }

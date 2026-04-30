@@ -15,6 +15,7 @@ const String adminregister = Weburl + 'admin/register';
 const String adminlogin = Weburl + 'admin/login';
 const String adminsetCompanyLocationApi =
     Weburl + 'admin/set-location';
+const String admingetCompanyLocation = Weburl + "admin/company-location";
 
 //////////////////////////////////////////////////////
 // 🔥 PLACES (FIXED - لازم functions)
@@ -52,7 +53,7 @@ const String admindashboardAddSubDepartment =
 const String employeeAdd = Weburl + 'employee/create';
 const String addEmployeeApi = Weburl + "employee/create";
 const String getEmployeesCount = Weburl + "employee/employees/count/all";
-
+const String checkAttendanceUrl = "$url1/api/attendance/check";
 const String employeelogin = url + "employee/login";
 const String employeegetMyProfile = url + "employee/me";
 const String employeeRegister = "${Weburl}employee/register";

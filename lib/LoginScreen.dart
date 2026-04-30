@@ -20,7 +20,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   bool loading = false;
   Future<void> handleLogin() async {
-    setState(() => loading = true);
+    if (mounted) setState(() => loading = true);
 
     try {
       final url = Uri.parse(employeelogin);
@@ -34,7 +34,9 @@ class _LoginScreenState extends State<LoginScreen> {
         }),
       );
 
-      final data = jsonDecode(response.body);
+      final data = response.body.isNotEmpty
+          ? jsonDecode(response.body)
+          : {};
 
       if (response.statusCode == 200) {
         final token = data["token"];

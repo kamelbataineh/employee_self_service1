@@ -1,6 +1,4 @@
 import 'package:easy_localization/easy_localization.dart';
-import 'package:employee_self_service/LoginScreen.dart';
-import 'package:employee_self_service/admin/login_page.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -21,6 +19,7 @@ void main() async {
       path: 'assets/translations',
       fallbackLocale: const Locale('en', 'US'),
       saveLocale: true,
+      startLocale: const Locale('en', 'US'),
       child: const MyApp(),
     ),
   );
@@ -33,16 +32,22 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      localizationsDelegates: context.localizationDelegates,
-      supportedLocales: context.supportedLocales,
+
+      // ? ????? ????????? (??? ????)
       locale: context.locale,
 
+      supportedLocales: context.supportedLocales,
+      localizationsDelegates: context.localizationDelegates,
+
       theme: ThemeData(
+        useMaterial3: true,
+
         textTheme: GoogleFonts.cairoTextTheme(
           Theme.of(context).textTheme,
         ),
+
         appBarTheme: AppBarTheme(
-          iconTheme:  IconThemeData(
+          iconTheme: const IconThemeData(
             color: Colors.white,
           ),
           titleTextStyle: GoogleFonts.cairo(
@@ -53,9 +58,7 @@ class MyApp extends StatelessWidget {
           centerTitle: true,
         ),
       ),
-      // home:  LoginScreen(),
-      // home:  LoginPage() ,
-// home: kIsWeb ? LoginPage() : LoginScreen(),
+
       home: const SplashCheck(),
     );
   }

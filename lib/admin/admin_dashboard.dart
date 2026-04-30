@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import '../config/api.dart';
+import 'CompanyLocationPage.dart';
 import 'sub_departments_page.dart';
 import 'add_department.dart';
 
@@ -32,6 +33,72 @@ class _AdminDashboardState extends State<AdminDashboard> {
     final prefs = await SharedPreferences.getInstance();
     token = prefs.getString("token");
     fetchDepartments();
+  }
+
+  Future<Map<String, dynamic>?> getCompanyLocation() async {
+    try {
+      final response = await http.get(
+        Uri.parse(admingetCompanyLocation),
+        headers: {
+          "Authorization": "Bearer $token",
+          "Cache-Control": "no-cache",
+        },
+      );
+
+      print("STATUS: ${response.statusCode}");
+      print("BODY: ${response.body}");
+
+      if (response.statusCode == 200) {
+        return jsonDecode(response.body);
+      }
+
+    } catch (e) {
+      print("Exception: $e");
+    }
+
+    return null;
+  }
+
+  Future<void> openCompanyLocation() async {
+    setState(() => loading = true);
+
+    final data = await getCompanyLocation();
+
+    if (data != null && data['companyLocation'] != null) {
+      try {
+        // 🛡️ حماية من أي نوع غلط أو null
+        final lat = (data['companyLocation']['latitude'] as num).toDouble();
+        final lng = (data['companyLocation']['longitude'] as num).toDouble();
+
+        final maxDistance = (data['maxDistance'] is num)
+            ? (data['maxDistance'] as num).toDouble()
+            : 10.0; // fallback
+
+        setState(() {
+          currentPage = CompanyLocationPage(
+            latitude: lat,
+            longitude: lng,
+            maxDistance: maxDistance,
+          );
+          currentTitle = "company_location".tr();
+          loading = false;
+        });
+      } catch (e) {
+        setState(() => loading = false);
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text("خطأ في بيانات الموقع")),
+        );
+
+        print("Parsing Error: $e");
+      }
+    } else {
+      setState(() => loading = false);
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("لم يتم تحديد موقع الشركة")),
+      );
+    }
   }
 
   Future<void> fetchDepartments() async {
@@ -197,6 +264,12 @@ class _AdminDashboardState extends State<AdminDashboard> {
                       ),
                     ],
                   ),
+                ),
+                buildSidebarItem(
+                  icon: Icons.location_on,
+                  title: "company_location".tr(),
+                    onTap: openCompanyLocation,
+
                 ),
               ],
             ),
